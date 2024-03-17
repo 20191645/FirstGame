@@ -78,6 +78,8 @@ void AFRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
         // LookAction('IA_Look')을 트리거 상태에서 Look 함수와 바인드 시켜준다
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
+        // JumpAction('IA_Jump')을 Started 상태에서 Jump 함수와 바인드 시켜준다
+        EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
     }
 }
 

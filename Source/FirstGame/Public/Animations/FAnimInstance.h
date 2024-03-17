@@ -28,14 +28,14 @@ protected:
 	float CurrentSpeed;
 
 	// Velocity: 속도
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USAnimInstance")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
 	FVector Velocity;
 
 	// bIsFalling: 현재 공중에 떠있는지
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USAnimInstance")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
 	uint8 bIsFalling : 1;
 
 	// bIsCrouching: 현재 쭈그려 앉아있는지
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USAnimInstance")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
 	uint8 bIsCrouching : 1;
 };

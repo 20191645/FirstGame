@@ -19,4 +19,8 @@ public:
 	// 'IA_Look'에 대응하는 속성
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputAction> LookAction;
+
+	// 'IA_Jump'에 대응하는 속성
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UInputAction> JumpAction;
 };
