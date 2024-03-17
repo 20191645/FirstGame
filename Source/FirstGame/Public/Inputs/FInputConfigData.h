@@ -23,4 +23,8 @@ public:
 	// 'IA_Jump'에 대응하는 속성
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputAction> JumpAction;
+
+	// 'IA_Attack'에 대응하는 속성
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UInputAction> AttackAction;
 };

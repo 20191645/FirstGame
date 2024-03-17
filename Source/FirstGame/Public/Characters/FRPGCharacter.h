@@ -21,6 +21,10 @@ public:
 	float GetForwardInputValue() const { return ForwardInputValue; }
 	float GetRightInputValue() const { return RightInputValue; }
 
+	// Animation Montage가 끝났을 때 호출되어 바인드할 함수
+	UFUNCTION()
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
 protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
@@ -29,6 +33,8 @@ private:
 	void Move(const FInputActionValue& InValue);
 	// 'IA_Look' 액션에 바인드할 함수
 	void Look(const FInputActionValue& InValue);
+	// 'IA_Attack' 액션에 바인드할 함수
+	void Attack(const FInputActionValue& InValue);
 
 private:
 	// Input Config Data의 액션들과 캐릭터를 바인드 시켜줄 데이터
@@ -44,4 +50,8 @@ private:
 	float ForwardInputValue;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", Meta = (AllowPrivateAccess = true))
 	float RightInputValue;
+
+	// bIsAttacking: Animation Montage('IM_Attack')가 재생중인지 확인하는 데이터
+	// UPROPERTY()가 아니므로 생성자에서 초기화 필수
+	uint8 bIsAttacking : 1;
 };

@@ -38,3 +38,15 @@ void UFAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
         }
     }
 }
+
+void UFAnimInstance::PlayAttackAnimMontage()
+{
+    // Animation Montage 등록 확인
+    if (true == ::IsValid(AttackAnimMontage)) {
+        // Montage_IsPlaying(): Animation Montage가 재생중인지 확인
+        if (false == Montage_IsPlaying(AttackAnimMontage)) {
+            // Montage_Play(): Animation Montage를 재생한다
+            Montage_Play(AttackAnimMontage);
+        }
+    }
+}

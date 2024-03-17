@@ -10,8 +10,11 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Inputs/FInputConfigData.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Animations/FAnimInstance.h"
 
 AFRPGCharacter::AFRPGCharacter()
+    :bIsAttacking(false)
 {
     PrimaryActorTick.bCanEverTick = false;
 
@@ -63,6 +66,20 @@ void AFRPGCharacter::BeginPlay()
             Subsystem->AddMappingContext(PlayerCharacterInputMappingContext, 0);
         }
     }
+
+    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
+    if (true == ::IsValid(AnimInstance)) {
+        // AnimationMontageEnded 델리게이트에 OnAttackMontageEnded() 멤버 함수 바인드
+         // -- Animation Montage('AM_Attack_Dagger')가 끝나면 함수 호출
+        AnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::OnAttackMontageEnded);
+    }
+}
+
+void AFRPGCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+    // Animation Montage가 끝났으므로 다시 걷는 모드로 변경
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+    bIsAttacking = false;
 }
 
 void AFRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -80,6 +97,8 @@ void AFRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
         // JumpAction('IA_Jump')을 Started 상태에서 Jump 함수와 바인드 시켜준다
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+        // AttackAction('IA_Attack')을 Started 상태에서 Attack 함수와 바인드 시켜준다
+        EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
     }
 }
 
@@ -118,4 +137,17 @@ void AFRPGCharacter::Look(const FInputActionValue& InValue)
     // 'IMC_PlayerCharacter'에서 X값에는 마우스 좌우 값을, Y값에는 마우스 상하 값의 반대값을 설정
     AddControllerYawInput(LookAxisVector.X);
     AddControllerPitchInput(LookAxisVector.Y);
+}
+
+void AFRPGCharacter::Attack(const FInputActionValue& InValue)
+{
+    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
+    if (true == ::IsValid(AnimInstance) && false == bIsAttacking)
+    {
+        // 움직이지 않고 멈춰서 Animation Montage를 재생할 수 있도록 한다
+        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+        // FAnimInstance에서 정의한 Animation Montage를 재생시켜줄 함수
+        AnimInstance->PlayAttackAnimMontage();
+        bIsAttacking = true;
+    }
 }
