@@ -36,6 +36,11 @@ private:
 	// 'IA_Attack' 액션에 바인드할 함수
 	void Attack(const FInputActionValue& InValue);
 
+	// CheckHit 델리게이트와 바운드할 함수
+	// -- 언리얼 실행 환경이 찾을 수 있도록 UFUNCTION() 매크로 붙임
+	UFUNCTION()
+	void CheckHit();
+
 private:
 	// Input Config Data의 액션들과 캐릭터를 바인드 시켜줄 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", Meta = (AllowPrivateAccess))

@@ -6,6 +6,8 @@
 #include "Animation/AnimInstance.h"
 #include "FAnimInstance.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCheckHitDelegate);
+
 UCLASS()
 class FIRSTGAME_API UFAnimInstance : public UAnimInstance
 {
@@ -26,6 +28,11 @@ public:
 private:
 	// Animation Montage('AM_Attack')를 재생시켜줄 함수
 	void PlayAttackAnimMontage();
+
+	// Animation Notify(CheckHit) 프레임에 호출되는 함수
+	// -- 언리얼 실행 환경이 찾을 수 있도록 UFUNCTION() 매크로 붙임
+	UFUNCTION()
+	void AnimNotify_CheckHit();
 
 protected:
 	// CurrentSpeed: 프레임마다 폰의 속력을 연동하기 위한 속성
@@ -49,4 +56,7 @@ protected:
 	// Animation Montage('AM_Attack')를 가져올 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
 	TObjectPtr<class UAnimMontage> AttackAnimMontage;
+
+	// CheckHit 델리게이트 -- 캐릭터가 신호를 받을 수 있도록 한다
+	FOnCheckHitDelegate OnCheckHitDelegate;
 };

@@ -72,6 +72,8 @@ void AFRPGCharacter::BeginPlay()
         // AnimationMontageEnded 델리게이트에 OnAttackMontageEnded() 멤버 함수 바인드
          // -- Animation Montage('AM_Attack_Dagger')가 끝나면 함수 호출
         AnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::OnAttackMontageEnded);
+        // Animation Notify(CheckHit)의 델리게이트에 CheckHit() 멤버 함수 바인드
+        AnimInstance->OnCheckHitDelegate.AddDynamic(this, &ThisClass::CheckHit);
     }
 }
 
@@ -150,4 +152,9 @@ void AFRPGCharacter::Attack(const FInputActionValue& InValue)
         AnimInstance->PlayAttackAnimMontage();
         bIsAttacking = true;
     }
+}
+
+void AFRPGCharacter::CheckHit()
+{
+    UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CheckHit()")));
 }
