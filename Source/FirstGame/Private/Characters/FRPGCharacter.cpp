@@ -48,6 +48,9 @@ AFRPGCharacter::AFRPGCharacter()
     GetCharacterMovement()->bUseControllerDesiredRotation = false;
     // RotationRate: 회전 속도
     GetCharacterMovement()->RotationRate = FRotator(0.f, 480.f, 0.f);
+
+    // Collision Preset('FCharacter') 설정
+    GetCapsuleComponent()->SetCollisionProfileName(TEXT("FCharacter"));
 }
 
 void AFRPGCharacter::BeginPlay()
