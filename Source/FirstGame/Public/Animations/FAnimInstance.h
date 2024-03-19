@@ -7,6 +7,7 @@
 #include "FAnimInstance.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCheckHitDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCheckCanNextAttackDelegate);
 
 UCLASS()
 class FIRSTGAME_API UFAnimInstance : public UAnimInstance
@@ -34,6 +35,10 @@ private:
 	UFUNCTION()
 	void AnimNotify_CheckHit();
 
+	// Animation Notify(CheckCanNextAttack) 프레임에 호출되는 함수
+	UFUNCTION()
+	void AnimNotify_CheckCanNextAttack();
+
 protected:
 	// CurrentSpeed: 프레임마다 폰의 속력을 연동하기 위한 속성
 	// 유지보수 편의를 위해 폰의 Tick() 함수가 아닌 애님 인스턴스의 Tick() 함수에서 폰의 정보를 가져와서,
@@ -59,4 +64,7 @@ protected:
 
 	// CheckHit 델리게이트 -- 캐릭터가 신호를 받을 수 있도록 한다
 	FOnCheckHitDelegate OnCheckHitDelegate;
+
+	// CheckCanNextAttack 델리게이트
+	FOnCheckCanNextAttackDelegate OnCheckCanNextAttackDelegate;
 };

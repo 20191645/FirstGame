@@ -41,6 +41,16 @@ private:
 	UFUNCTION()
 	void CheckHit();
 
+	// 함수 순서: Begin(공격 시작) - Check(공격키를 누름) - End(공격 끝)
+	void BeginAttack();
+
+	// CheckCanNextAttack 델리게이트와 바운드할 함수
+	UFUNCTION()
+	void CheckCanNextAttack();
+
+	UFUNCTION()
+	void EndAttack(class UAnimMontage* InAnimMontage, bool bInterrupted);
+
 private:
 	// Input Config Data의 액션들과 캐릭터를 바인드 시켜줄 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", Meta = (AllowPrivateAccess))
@@ -59,4 +69,17 @@ private:
 	// bIsAttacking: Animation Montage('IM_Attack')가 재생중인지 확인하는 데이터
 	// UPROPERTY()가 아니므로 생성자에서 초기화 필수
 	uint8 bIsAttacking : 1;
+
+	// 직접 설정한 Montage Section 이름이 필요함 -> Attack1, Attack2, Attack3...
+	// Attack1: 첫 번째 공격 시작 -> Attack2 / Attack3-4 [공격 키 입력X, 공격 키 입력O]
+	// Attack2: 첫 번째 공격 끝
+	// Attack3-4: 두 번째 공격 시작 ~ 끝
+	FString AttackAnimMontageSectionName = FString(TEXT("Attack"));
+
+	// 현재 Montage Section 위치 [1~3]
+	int32 CurrentSectionCount = 0;
+
+	// bIsAttackKeyPressed: 공격키를 눌렀는지
+	// 에디터에서 관리되거나 Serialize될 필요 없으므로 uint8 대신 bool 자료형 사용
+	bool bIsAttackKeyPressed = false;
 };

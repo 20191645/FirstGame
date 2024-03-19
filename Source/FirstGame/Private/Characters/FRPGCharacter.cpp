@@ -74,6 +74,8 @@ void AFRPGCharacter::BeginPlay()
         AnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::OnAttackMontageEnded);
         // Animation Notify(CheckHit)의 델리게이트에 CheckHit() 멤버 함수 바인드
         AnimInstance->OnCheckHitDelegate.AddDynamic(this, &ThisClass::CheckHit);
+        // Animation Notify(CheckCanNextCombo)의 델리게이트에 CheckCanNextCombo() 멤버 함수 바인드
+        AnimInstance->OnCheckCanNextAttackDelegate.AddDynamic(this, &ThisClass::CheckCanNextAttack);
     }
 }
 
@@ -143,18 +145,77 @@ void AFRPGCharacter::Look(const FInputActionValue& InValue)
 
 void AFRPGCharacter::Attack(const FInputActionValue& InValue)
 {
-    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
-    if (true == ::IsValid(AnimInstance) && false == bIsAttacking)
-    {
-        // 움직이지 않고 멈춰서 Animation Montage를 재생할 수 있도록 한다
-        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-        // FAnimInstance에서 정의한 Animation Montage를 재생시켜줄 함수
-        AnimInstance->PlayAttackAnimMontage();
-        bIsAttacking = true;
+    // 공격키를 눌렀을 때 Montage Section 위치가 0 -> BeginAttack() 호출
+    if (0 == CurrentSectionCount) {
+        BeginAttack();
+        return;
+    }
+    // 공격키를 눌렀을 때 Montage Section 위치가 0이 아님 -> 다른 섹션으로 넘어간다
+    else {
+        // CurrentSectionCount의 값이 "1 ~ 3" 사이에 있는지 체크한다
+        ensure(FMath::IsWithinInclusive<int32>(CurrentSectionCount, 1, 3));
+        // 다음 Montage Section으로 넘어갈 때 확인한다
+        bIsAttackKeyPressed = true;
     }
 }
 
 void AFRPGCharacter::CheckHit()
 {
     UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CheckHit()")));
+}
+
+void AFRPGCharacter::BeginAttack()
+{
+    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
+    if (false == ::IsValid(AnimInstance)) {
+        return;
+    }
+
+    CurrentSectionCount = 1;
+
+    // 움직이지 않고 멈춰서 Animation Montage를 재생할 수 있도록 한다
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+    // FAnimInstance에서 정의한 Animation Montage를 재생시켜줄 함수
+    AnimInstance->PlayAttackAnimMontage();
+
+    // 공격이 끝났는지(bIsAttacking) 확인할 델리게이트 추가
+    FOnMontageEnded OnMontageEndedDelegate;
+    // 위 델리게이트에 EndAttack() 함수와 바인드 -> Montage가 끝나면 EndAttack() 호출
+    OnMontageEndedDelegate.BindUObject(this, &ThisClass::EndAttack);
+    // 특정한 Montage(AttackAnimMontage)가 끝날때만 델리게이트가 호출되게끔 설정
+    AnimInstance->Montage_SetEndDelegate(OnMontageEndedDelegate, AnimInstance->AttackAnimMontage);
+}
+
+void AFRPGCharacter::CheckCanNextAttack()
+{
+    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
+    if (false == ::IsValid(AnimInstance)) {
+        return;
+    }
+
+    // Attack2 (Attack1에서 공격 키 입력 X -- 콤보 멈춤)
+    if (false == bIsAttackKeyPressed) {
+        CurrentSectionCount = 2;
+    }
+    // Attack3 (Attack1에서 공격 키 입력 O -- 콤보 시작)
+    else {
+        CurrentSectionCount = 3;
+    }
+
+    // NextSectionName: 넘어가고자 하는 Montage Section의 이름
+    FName NextSectionName =
+        *FString::Printf(TEXT("%s%d"), *AttackAnimMontageSectionName, CurrentSectionCount);
+    // Motage_JumpToSection(Section, Montage): Montage의 Section으로 넘어간다
+    AnimInstance->Montage_JumpToSection(NextSectionName, AnimInstance->AttackAnimMontage);
+}
+
+void AFRPGCharacter::EndAttack(UAnimMontage* InAnimMontage, bool bInterrupted)
+{
+    // CurrentSectionCount 값이 0이 아닌지 체크한다
+    ensure(0 != CurrentSectionCount);
+    CurrentSectionCount = 0;
+    bIsAttackKeyPressed = false;
+    // 공격 액션이 끝났으므로 다시 움직이는 모드로 변경
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }
