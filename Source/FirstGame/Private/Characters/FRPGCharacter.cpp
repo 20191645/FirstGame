@@ -164,7 +164,34 @@ void AFRPGCharacter::Attack(const FInputActionValue& InValue)
 
 void AFRPGCharacter::CheckHit()
 {
-    UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CheckHit()")));
+    // 대상을 하나만 감지할 예정(Single)이라 단수 정의
+    FHitResult HitResult;
+    // Params(..., bInTraceComplex, *InIgnoreActor) 
+    // -- bInTraceComplex: Static Mesh 모양 그대로 충돌체를 만들지 선택 (T/F)
+    // -- InIgnoreActor: 대상 감지에서 해당 액터는 뺀다 (Ignore)
+    FCollisionQueryParams Params(NAME_None, false, this);
+
+    // SweepSingleByChannel(): Trace channel을 사용해 물리적 충돌 여부를 조사하는 함수
+    bool bResult = GetWorld()->SweepSingleByChannel(
+        HitResult,  // 물리적 충돌이 탐지되면 정보를 담을 구조체
+        GetActorLocation(), // 탐색을 시작할 위치
+        GetActorLocation() + 200 * GetActorForwardVector(),   // 탐색을 끝낼 위치
+        FQuat::Identity,    // 탐색에 사용할 도형의 회전 = ZeroRotator
+        ECC_GameTraceChannel12, // 물리 충돌 감지에 사용할 Trace channel 정보 = Attack Channel의 Enum값
+        FCollisionShape::MakeSphere(50.f),  // 탐색에 사용할 기본 도형 정보 = 반지름 50인 구체
+        Params // 탐색 방법에 대한 설정 값을 모은 구조체
+    );
+
+    // Hit한 대상 감지 성공
+    if (true == bResult) {
+        // HitResult의 Actor 속성은 TWeakObjectPtr 자료형 선언 
+        // -> IsValid() 함수로 유효성 검사 후 사용
+        // <- GetActor() 내부에서 IsActorValid() 함수 호출됨
+        if (true == ::IsValid(HitResult.GetActor())) {
+            // Hit한 대상 액터의 이름 출력
+            UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Hit Actor Name: %s"), *HitResult.GetActor()->GetName()));
+        }
+    }
 }
 
 void AFRPGCharacter::BeginAttack()

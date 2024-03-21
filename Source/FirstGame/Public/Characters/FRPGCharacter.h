@@ -11,6 +11,9 @@ UCLASS()
 class FIRSTGAME_API AFRPGCharacter : public AFCharacter
 {
 	GENERATED_BODY()
+
+	// AnimNotify(AN_CheckHit) 클래스에서 FRPGCharacter 클래스의 CheckHit() 멤버함수에 접근하기 위함
+	friend class UAN_CheckHit;
 	
 public:
 	AFRPGCharacter();
