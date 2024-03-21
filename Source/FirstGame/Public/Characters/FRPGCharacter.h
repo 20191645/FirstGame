@@ -85,4 +85,9 @@ private:
 	// bIsAttackKeyPressed: 공격키를 눌렀는지
 	// 에디터에서 관리되거나 Serialize될 필요 없으므로 uint8 대신 bool 자료형 사용
 	bool bIsAttackKeyPressed = false;
+
+	// 충돌 탐색 길이
+	float AttackRange = 100.f;
+	// 충돌 탐색 구체 반지름
+	float AttackRadius = 50.f;
 };

@@ -175,10 +175,10 @@ void AFRPGCharacter::CheckHit()
     bool bResult = GetWorld()->SweepSingleByChannel(
         HitResult,  // 물리적 충돌이 탐지되면 정보를 담을 구조체
         GetActorLocation(), // 탐색을 시작할 위치
-        GetActorLocation() + 200 * GetActorForwardVector(),   // 탐색을 끝낼 위치
+        GetActorLocation() + AttackRange * GetActorForwardVector(),   // 탐색을 끝낼 위치
         FQuat::Identity,    // 탐색에 사용할 도형의 회전 = ZeroRotator
         ECC_GameTraceChannel12, // 물리 충돌 감지에 사용할 Trace channel 정보 = Attack Channel의 Enum값
-        FCollisionShape::MakeSphere(50.f),  // 탐색에 사용할 기본 도형 정보 = 반지름 50인 구체
+        FCollisionShape::MakeSphere(AttackRadius),  // 탐색에 사용할 기본 도형 정보 = 반지름 50인 구체
         Params // 탐색 방법에 대한 설정 값을 모은 구조체
     );
 
@@ -192,6 +192,32 @@ void AFRPGCharacter::CheckHit()
             UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Hit Actor Name: %s"), *HitResult.GetActor()->GetName()));
         }
     }
+
+#pragma region DebugDrawing
+    // 캡슐 탐색 시작 위치에서 끝 위치로 향하는 벡터 (캐릭터의 Forward 방향)
+    FVector TraceVec = GetActorForwardVector() * AttackRange;
+    // 캡슐 벡터의 중심 위치
+    FVector Center = GetActorLocation() + TraceVec * 0.5f;
+    // 캡슐 벡터 길이의 절반
+    float HalfHeight = AttackRange * 0.5f + AttackRadius;
+    // 캐릭터의 Forward 방향으로 회전 행렬 적용하여 캡슐을 눕힌다
+    FQuat CapsuleRot = FRotationMatrix::MakeFromZ(TraceVec).ToQuat();
+    // 캡슐 색깔 -- bResult(Hit 성공)
+    FColor DrawColor = true == bResult ? FColor::Green : FColor::Red;
+    // 캡슐이 살아있는 시간
+    float DebugLifeTime = 5.f;
+
+    DrawDebugCapsule(
+        GetWorld(),
+        Center,
+        HalfHeight,
+        AttackRadius,
+        CapsuleRot,
+        DrawColor,
+        false,
+        DebugLifeTime
+    );
+#pragma endregion
 }
 
 void AFRPGCharacter::BeginAttack()
