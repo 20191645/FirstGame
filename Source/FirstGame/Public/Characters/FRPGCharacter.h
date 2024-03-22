@@ -28,6 +28,10 @@ public:
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	// TakeDamage(): 데미지 전달 구현 함수
+	// Damage: 데미지 세기, DamageEvent: 데미지 종류, EventInstigator: 공격 명령 내린 컨트롤러, DamageCauser: 데미지 전달을 위해 사용한 액터
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;;
+
 protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 

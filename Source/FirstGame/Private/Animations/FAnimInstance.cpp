@@ -17,6 +17,8 @@ void UFAnimInstance::NativeInitializeAnimation()
     Velocity = FVector::ZeroVector;
     bIsFalling = false;
     bIsCrouching = false;
+
+    bIsDead = false;
 }
 
 void UFAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -35,6 +37,8 @@ void UFAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
             CurrentSpeed = Velocity.Size();
             bIsFalling = CharacterMovementComponent->IsFalling();
             bIsCrouching = CharacterMovementComponent->IsCrouching();
+
+            bIsDead = OwnerCharacter->IsDead();
         }
     }
 }

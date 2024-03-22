@@ -12,6 +12,8 @@
 #include "Inputs/FInputConfigData.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Animations/FAnimInstance.h"
+#include "Engine/EngineTypes.h"
+#include "Engine/DamageEvents.h"
 
 AFRPGCharacter::AFRPGCharacter()
     :bIsAttacking(false)
@@ -87,6 +89,27 @@ void AFRPGCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupt
     // Animation Montage가 끝났으므로 다시 걷는 모드로 변경
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
     bIsAttacking = false;
+}
+
+float AFRPGCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    float FinalDamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+    CurrentHP = FMath::Clamp(CurrentHP - FinalDamageAmount, 0.f, MaxHP);
+
+    // 현재 HP가 0에 가까워졌을 때 -- 죽음 상태
+    if (CurrentHP < KINDA_SMALL_NUMBER)
+    {
+        bIsDead = true;
+        CurrentHP = 0.f;
+        // 더 이상 충돌이 일어나지 않고 움직이지 않도록 설정
+        GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+    }
+
+    UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s [%.1f / %.1f]"), *GetName(), CurrentHP, MaxHP));
+
+    return FinalDamageAmount;
 }
 
 void AFRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -188,8 +211,9 @@ void AFRPGCharacter::CheckHit()
         // -> IsValid() 함수로 유효성 검사 후 사용
         // <- GetActor() 내부에서 IsActorValid() 함수 호출됨
         if (true == ::IsValid(HitResult.GetActor())) {
-            // Hit한 대상 액터의 이름 출력
-            UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Hit Actor Name: %s"), *HitResult.GetActor()->GetName()));
+            // 현재 액터가 Hit한 대상의 데미지 전달 함수 호출
+            FDamageEvent DamageEvent;
+            HitResult.GetActor()->TakeDamage(20.f, DamageEvent, GetController(), this);
         }
     }
 
@@ -217,7 +241,7 @@ void AFRPGCharacter::CheckHit()
         false,
         DebugLifeTime
     );
-#pragma endregion
+#pragma endregion 
 }
 
 void AFRPGCharacter::BeginAttack()

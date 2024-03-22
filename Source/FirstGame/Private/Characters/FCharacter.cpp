@@ -42,4 +42,7 @@ AFCharacter::AFCharacter()
     GetCharacterMovement()->AirControl = 0.35f;
     // BrakingDecelerationWalking: 움직임을 멈췄을 때 멈추는 속도
     GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+
+    // 죽음 속성 초기화
+    bIsDead = false;
 }

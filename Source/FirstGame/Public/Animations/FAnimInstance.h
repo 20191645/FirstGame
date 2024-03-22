@@ -67,4 +67,8 @@ protected:
 
 	// CheckCanNextAttack 델리게이트
 	FOnCheckCanNextAttackDelegate OnCheckCanNextAttackDelegate;
+
+	// bIsDead: 현재 죽었는지
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
+	uint8 bIsDead : 1;
 };
