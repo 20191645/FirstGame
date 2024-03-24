@@ -17,6 +17,7 @@ public class FirstGame : ModuleRules
 
 			// AI
 			"NavigationSystem",
+			"AIModule",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

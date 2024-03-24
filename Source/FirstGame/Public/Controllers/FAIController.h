@@ -14,19 +14,18 @@ class FIRSTGAME_API AFAIController : public AAIController
 public:
 	AFAIController();
 	
+	void BeginAI(APawn* InPawn);
+	void EndAI();
+
 protected:
 	virtual void BeginPlay() override;
-
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
-	void OnPatrolTimerElapsed();
-
-public:
-	// 타이머 핸들
-	FTimerHandle PatrolTimerHandle = FTimerHandle();
-	// 타이머가 울리는 주기
-	static const float PatrolRepeatInterval;
-	// 이동 범위
-	static const float PatrolRadius;
+	// Blackboard 데이터 정보를 담을 속성
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AFAIController", meta = (AllowPrivateAccess))
+	TObjectPtr<class UBlackboardData> BlackboardDataAsset;
+	// BehaviorTree 데이터 정보를 담을 속성
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AFAIController", meta = (AllowPrivateAccess))
+	TObjectPtr<class UBehaviorTree> BehaviorTree;
 };
