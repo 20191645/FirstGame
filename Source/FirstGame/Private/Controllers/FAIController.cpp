@@ -8,6 +8,10 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+const float AFAIController::PatrolRadius(500.f);
+const FName AFAIController::StartPatrolPositionKey(TEXT("StartPatrolPosition"));
+const FName AFAIController::EndPatrolPositionKey(TEXT("EndPatrolPosition"));
+
 AFAIController::AFAIController()
 {
     Blackboard = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard"));
@@ -26,6 +30,9 @@ void AFAIController::BeginAI(APawn* InPawn)
             bool bRunSucceeded = RunBehaviorTree(BehaviorTree);
             ensure(true == bRunSucceeded);
             UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("BeginAI()!!")));
+        
+            // 'StartPatrolPositionKey'에 저장된 Key 이름을 통해 'StartPatrolPosition'에 현재 액터의 위치 벡터값 저장
+            BlackboardComponent->SetValueAsVector(StartPatrolPositionKey, InPawn->GetActorLocation());
         }
     }
 }
