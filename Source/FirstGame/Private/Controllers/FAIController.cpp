@@ -11,6 +11,7 @@
 const float AFAIController::PatrolRadius(500.f);
 const FName AFAIController::StartPatrolPositionKey(TEXT("StartPatrolPosition"));
 const FName AFAIController::EndPatrolPositionKey(TEXT("EndPatrolPosition"));
+const FName AFAIController::TargetActorKey(TEXT("TargetActor"));
 
 AFAIController::AFAIController()
 {

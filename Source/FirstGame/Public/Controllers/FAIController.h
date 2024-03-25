@@ -29,6 +29,8 @@ public:
 	static const FName StartPatrolPositionKey;
 	static const FName EndPatrolPositionKey;
 
+	static const FName TargetActorKey;
+
 private:
 	// Blackboard 데이터 정보를 담을 속성
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AFAIController", meta = (AllowPrivateAccess))

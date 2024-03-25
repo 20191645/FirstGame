@@ -13,4 +13,6 @@ class FIRSTGAME_API AFNPCharacter : public AFCharacter
 	
 public:
 	AFNPCharacter();
+
+	virtual void BeginPlay() override;
 };
