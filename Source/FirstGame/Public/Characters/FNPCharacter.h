@@ -13,6 +13,9 @@ class FIRSTGAME_API AFNPCharacter : public AFCharacter
 
 	// AnimNotify(AN_CheckHit) 클래스에서 FNPCharacter 클래스의 CheckHit() 멤버함수에 접근하기 위함
 	friend class UAN_CheckHit;
+
+	// BTTask_Attack 클래스에서 Attack() 멤버함수를 호출하기 위해
+	friend class UBTTask_Attack;
 	
 public:
 	AFNPCharacter();
