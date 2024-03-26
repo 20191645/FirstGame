@@ -16,6 +16,8 @@ class FIRSTGAME_API UFAnimInstance : public UAnimInstance
 
 	// FRPGCharacter 클래스에서 PlayAttackAnimMontage() 함수를 호출하기 위하여 friend 정의
 	friend class AFRPGCharacter;
+	// FNPCharacter 클래스에서 PlayAttackAnimMontage() 함수를 호출하기 위하여 friend 정의
+	friend class AFNPCharacter;
 	
 public:
 	UFAnimInstance();

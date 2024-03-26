@@ -75,11 +75,11 @@ void AFRPGCharacter::BeginPlay()
     UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
     if (true == ::IsValid(AnimInstance)) {
         // AnimationMontageEnded 델리게이트에 OnAttackMontageEnded() 멤버 함수 바인드
-         // -- Animation Montage('AM_Attack_Dagger')가 끝나면 함수 호출
+        // -- Animation Montage('AM_Attack_RPG')가 끝나면 함수 호출
         AnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::OnAttackMontageEnded);
         // Animation Notify(CheckHit)의 델리게이트에 CheckHit() 멤버 함수 바인드
         AnimInstance->OnCheckHitDelegate.AddDynamic(this, &ThisClass::CheckHit);
-        // Animation Notify(CheckCanNextCombo)의 델리게이트에 CheckCanNextCombo() 멤버 함수 바인드
+        // Animation Notify(CheckCanNextAttack)의 델리게이트에 CheckCanNextAttack() 멤버 함수 바인드
         AnimInstance->OnCheckCanNextAttackDelegate.AddDynamic(this, &ThisClass::CheckCanNextAttack);
     }
 }

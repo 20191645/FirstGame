@@ -73,7 +73,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", Meta = (AllowPrivateAccess = true))
 	float RightInputValue;
 
-	// bIsAttacking: Animation Montage('IM_Attack')가 재생중인지 확인하는 데이터
+	// bIsAttacking: Animation Montage('IM_Attack_RPG')가 재생중인지 확인하는 데이터
 	// UPROPERTY()가 아니므로 생성자에서 초기화 필수
 	uint8 bIsAttacking : 1;
 
