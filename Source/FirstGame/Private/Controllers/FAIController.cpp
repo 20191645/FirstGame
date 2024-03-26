@@ -30,7 +30,6 @@ void AFAIController::BeginAI(APawn* InPawn)
             // BehaviorTree 실행 및 확인
             bool bRunSucceeded = RunBehaviorTree(BehaviorTree);
             ensure(true == bRunSucceeded);
-            UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("BeginAI()!!")));
         
             // 'StartPatrolPositionKey'에 저장된 Key 이름을 통해 'StartPatrolPosition'에 현재 액터의 위치 벡터값 저장
             BlackboardComponent->SetValueAsVector(StartPatrolPositionKey, InPawn->GetActorLocation());
@@ -44,7 +43,6 @@ void AFAIController::EndAI()
     if (true == ::IsValid(BehaviorTreeComponent)) {
         // BehaviorTree 중단
         BehaviorTreeComponent->StopTree();
-        UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("EndAI()!!")));
     }
 }
 

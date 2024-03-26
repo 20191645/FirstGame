@@ -102,6 +102,7 @@ float AFRPGCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
     {
         bIsDead = true;
         CurrentHP = 0.f;
+
         // 더 이상 충돌이 일어나지 않고 움직이지 않도록 설정
         GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);

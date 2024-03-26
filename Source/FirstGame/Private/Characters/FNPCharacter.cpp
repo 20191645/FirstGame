@@ -5,6 +5,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Animations/FAnimInstance.h"
+#include "Characters/FRPGCharacter.h"
+#include "Components/CapsuleComponent.h"
+#include "Engine/EngineTypes.h"
+#include "Engine/DamageEvents.h"
 
 AFNPCharacter::AFNPCharacter()
 {
@@ -44,6 +48,34 @@ void AFNPCharacter::BeginPlay()
         // Animation Notify(CheckCanNextAttack)의 델리게이트에 CheckCanNextAttack() 멤버 함수 바인드
         AnimInstance->OnCheckCanNextAttackDelegate.AddDynamic(this, &ThisClass::CheckCanNextAttack);
 	}
+}
+
+float AFNPCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    // FinalDamageAmount: 받은 데미지 최종값
+    float FinalDamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+    CurrentHP = FMath::Clamp(CurrentHP - FinalDamageAmount, 0.f, MaxHP);
+
+    // 현재 HP가 0에 가까워졌을 때 -> 죽음. 시체 상태
+    if (CurrentHP < KINDA_SMALL_NUMBER) {
+        // bIsDead 설정 -> 죽는 애니메이션 실행
+        bIsDead = true;
+        CurrentHP = 0.f;
+
+        GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+        // NPC가 죽었으므로 Behavior Tree를 종료한다
+        AFAIController* AIController = Cast<AFAIController>(GetController());
+        if (true == ::IsValid(AIController)) {
+            AIController->EndAI();
+        }
+    }
+
+    UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s [%.1f / %.1f]"), *GetName(), CurrentHP, MaxHP));
+
+    return FinalDamageAmount;
 }
 
 void AFNPCharacter::Attack()
@@ -91,7 +123,9 @@ void AFNPCharacter::CheckHit()
         // -> IsValid() 함수로 유효성 검사 후 사용
         // <- GetActor() 내부에서 IsActorValid() 함수 호출됨
         if (true == ::IsValid(HitResult.GetActor())) {
-            UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("[NPC] Hit Actor Name: %s"), *HitResult.GetActor()->GetName()));
+            // 현재 액터가 Hit한 대상의 데미지 전달 함수 호출
+            FDamageEvent DamageEvent;
+            HitResult.GetActor()->TakeDamage(5.f, DamageEvent, GetController(), this);
         }
     }
 

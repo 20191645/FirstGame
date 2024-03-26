@@ -24,6 +24,9 @@ public:
 
 	bool IsNowAttacking() const { return bIsAttacking; }
 
+	// NPC가 데미지를 받기 위한 함수
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 private:
 	// NPC 공격 Task 실행 시 호출될 함수
 	void Attack();
