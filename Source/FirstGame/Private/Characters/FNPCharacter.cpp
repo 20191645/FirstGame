@@ -57,8 +57,6 @@ void AFNPCharacter::Attack()
     else {
         // CurrentSectionCount의 값이 "1 ~ 5" 사이에 있는지 체크한다
         ensure(FMath::IsWithinInclusive<int32>(CurrentSectionCount, 1, 5));
-        // 다음 Montage Section으로 넘어갈 때 확인한다
-        bIsAttackKeyPressed = true;
     }
 }
 
@@ -77,7 +75,7 @@ void AFNPCharacter::CheckHit()
     FCollisionQueryParams Params(NAME_None, false, this);
 
     // SweepSingleByChannel(): Trace channel을 사용해 물리적 충돌 여부를 조사하는 함수
-    bool bResult = GetWorld()->SweepSingleByChannel(
+    bResult = GetWorld()->SweepSingleByChannel(
         HitResult,  // 물리적 충돌이 탐지되면 정보를 담을 구조체
         GetActorLocation(), // 탐색을 시작할 위치
         GetActorLocation() + AttackRange * GetActorForwardVector(),   // 탐색을 끝낼 위치
@@ -154,11 +152,11 @@ void AFNPCharacter::CheckCanNextAttack()
         return;
     }
 
-    // 공격 키 입력 X -- 콤보 멈춤
-    if (false == bIsAttackKeyPressed) {
+    // 캐릭터 타격 X -- 콤보 멈춤
+    if (false == bResult) {
         CurrentSectionCount += 1;
     }
-    // 공격 키 입력 O -- 콤보 시작
+    // 캐릭터 타격 O -- 콤보 시작
     else {
         CurrentSectionCount += 2;
     }
@@ -175,7 +173,6 @@ void AFNPCharacter::EndAttack(UAnimMontage* InAnimMontage, bool bInterrupted)
     // CurrentSectionCount 값이 0이 아닌지 체크한다
     ensure(0 != CurrentSectionCount);
     CurrentSectionCount = 0;
-    bIsAttackKeyPressed = false;
     // 공격 액션이 끝났으므로 다시 움직이는 모드로 변경
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }

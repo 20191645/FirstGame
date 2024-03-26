@@ -67,7 +67,6 @@ private:
 	// 현재 Montage Section 위치 [1~5]
 	int32 CurrentSectionCount = 0;
 
-	// bIsAttackKeyPressed: 공격키를 눌렀는지
-	// 에디터에서 관리되거나 Serialize될 필요 없으므로 uint8 대신 bool 자료형 사용
-	bool bIsAttackKeyPressed = false;
+	// bResult: NPC 공격에 타격된 대상이 있는지
+	bool bResult = false;
 };
