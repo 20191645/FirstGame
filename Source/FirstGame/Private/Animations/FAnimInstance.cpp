@@ -57,7 +57,8 @@ void UFAnimInstance::PlayAttackAnimMontage()
 
 void UFAnimInstance::AnimNotify_CheckHit()
 {
-    // CheckHit 델리게이트가 Bound 상태면 Broadcast -> FRPGCharacter에서 바인드한 함수 호출
+    // CheckHit 델리게이트가 Bound 상태면 Broadcast 
+    // -> FRPGCharacter, FNPCharacter에서 바인드한 함수 호출
     if (true == OnCheckHitDelegate.IsBound()) {
         OnCheckHitDelegate.Broadcast();
     }
@@ -65,7 +66,8 @@ void UFAnimInstance::AnimNotify_CheckHit()
 
 void UFAnimInstance::AnimNotify_CheckCanNextAttack()
 {
-    // CheckCanNextAttack 델리게이트가 Bound 상태면 Broadcast -> SRPGCharacter에서 바인드한 함수 호출
+    // CheckCanNextAttack 델리게이트가 Bound 상태면 Broadcast 
+    // -> FRPGCharacter, FNPCharacter에서 바인드한 함수 호출
     if (true == OnCheckCanNextAttackDelegate.IsBound()) {
         OnCheckCanNextAttackDelegate.Broadcast();
     }
