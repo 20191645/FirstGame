@@ -9,6 +9,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/DamageEvents.h"
+#include "Components/FStatComponent.h"
 
 AFNPCharacter::AFNPCharacter()
 {
@@ -55,25 +56,14 @@ float AFNPCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, A
     // FinalDamageAmount: 받은 데미지 최종값
     float FinalDamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
-    CurrentHP = FMath::Clamp(CurrentHP - FinalDamageAmount, 0.f, MaxHP);
-
-    // 현재 HP가 0에 가까워졌을 때 -> 죽음. 시체 상태
-    if (CurrentHP < KINDA_SMALL_NUMBER) {
-        // bIsDead 설정 -> 죽는 애니메이션 실행
-        bIsDead = true;
-        CurrentHP = 0.f;
-
-        GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-
-        // NPC가 죽었으므로 Behavior Tree를 종료한다
+    if (StatComponent->GetCurrentHP() < KINDA_SMALL_NUMBER)
+    {
         AFAIController* AIController = Cast<AFAIController>(GetController());
-        if (true == ::IsValid(AIController)) {
+        if (true == ::IsValid(AIController))
+        {
             AIController->EndAI();
         }
     }
-
-    UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s [%.1f / %.1f]"), *GetName(), CurrentHP, MaxHP));
 
     return FinalDamageAmount;
 }

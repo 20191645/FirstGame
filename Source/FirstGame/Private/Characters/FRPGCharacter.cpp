@@ -95,21 +95,6 @@ float AFRPGCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
 {
     float FinalDamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
-    CurrentHP = FMath::Clamp(CurrentHP - FinalDamageAmount, 0.f, MaxHP);
-
-    // 현재 HP가 0에 가까워졌을 때 -- 죽음 상태
-    if (CurrentHP < KINDA_SMALL_NUMBER)
-    {
-        bIsDead = true;
-        CurrentHP = 0.f;
-
-        // 더 이상 충돌이 일어나지 않고 움직이지 않도록 설정
-        GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-    }
-
-    UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s [%.1f / %.1f]"), *GetName(), CurrentHP, MaxHP));
-
     return FinalDamageAmount;
 }
 

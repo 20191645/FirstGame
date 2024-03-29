@@ -3,6 +3,7 @@
 #include "Animations/FAnimInstance.h"
 #include "Characters/FRPGCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/FStatComponent.h"
 
 UFAnimInstance::UFAnimInstance()
 {
@@ -19,6 +20,17 @@ void UFAnimInstance::NativeInitializeAnimation()
     bIsCrouching = false;
 
     bIsDead = false;
+
+    AFCharacter* OwnerCharacter = Cast<AFCharacter>(TryGetPawnOwner());
+    if (true == ::IsValid(OwnerCharacter)) {
+        UFStatComponent* StatComponent = OwnerCharacter->GetStatComponent();
+        if (true == ::IsValid(StatComponent)) {
+            if (false == StatComponent->OnOutOfCurrentHPDelegate.IsAlreadyBound(this, &ThisClass::OnCharacterDeath)) {
+                // 'OnOutOfCurrentHPDelegate'에 'OnCharacterDeath()' 멤버함수 바인드
+                StatComponent->OnOutOfCurrentHPDelegate.AddDynamic(this, &ThisClass::OnCharacterDeath);
+            }
+        }
+    }
 }
 
 void UFAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -37,8 +49,6 @@ void UFAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
             CurrentSpeed = Velocity.Size();
             bIsFalling = CharacterMovementComponent->IsFalling();
             bIsCrouching = CharacterMovementComponent->IsCrouching();
-
-            bIsDead = OwnerCharacter->IsDead();
         }
     }
 }
@@ -71,4 +81,9 @@ void UFAnimInstance::AnimNotify_CheckCanNextAttack()
     if (true == OnCheckCanNextAttackDelegate.IsBound()) {
         OnCheckCanNextAttackDelegate.Broadcast();
     }
+}
+
+void UFAnimInstance::OnCharacterDeath()
+{
+    bIsDead = true;
 }

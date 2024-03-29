@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/FStatComponent.h"
 
 AFCharacter::AFCharacter()
 {
@@ -43,6 +44,42 @@ AFCharacter::AFCharacter()
     // BrakingDecelerationWalking: 움직임을 멈췄을 때 멈추는 속도
     GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
-    // 죽음 속성 초기화
-    bIsDead = false;
+    StatComponent = CreateDefaultSubobject<UFStatComponent>(TEXT("StatComponent"));
+}
+
+void AFCharacter::BeginPlay()
+{
+    Super::BeginPlay();
+
+    if (false == ::IsValid(StatComponent)) {
+        return;
+    }
+
+    if (false == StatComponent->OnOutOfCurrentHPDelegate.IsAlreadyBound(this, &ThisClass::OnCharacterDeath)) {
+        // 'OnOutOfCurrentHPDelegate'에 'OnCharacterDeath()' 멤버함수 바인드
+        StatComponent->OnOutOfCurrentHPDelegate.AddDynamic(this, &ThisClass::OnCharacterDeath);
+    }
+}
+
+float AFCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    float FinalDamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+    // 데미지 받은만큼 'CurrentHP' 감소
+    StatComponent->SetCurrentHP(StatComponent->GetCurrentHP() - FinalDamageAmount);
+
+    UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s [%.1f / %.1f]"), *GetName(), StatComponent->GetCurrentHP(), StatComponent->GetMaxHP()));
+
+    return FinalDamageAmount;
+}
+
+void AFCharacter::OnCharacterDeath()
+{
+    GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+    // 'OnOutOfCurrentHPDelegate'에 바인드되어 있던 멤버함수 'OnCharacterDeath()' 멤버함수 언바인드
+    if (true == StatComponent->OnOutOfCurrentHPDelegate.IsAlreadyBound(this, &ThisClass::OnCharacterDeath)) {
+        StatComponent->OnOutOfCurrentHPDelegate.RemoveDynamic(this, &ThisClass::OnCharacterDeath);
+    }
 }

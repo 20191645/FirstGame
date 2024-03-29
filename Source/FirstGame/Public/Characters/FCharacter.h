@@ -14,12 +14,16 @@ class FIRSTGAME_API AFCharacter : public ACharacter
 public:
 	AFCharacter();
 
-	// HP, 죽음 속성의 Getter, Setter
-	float GetMaxHP() const { return MaxHP; }
-	float GetCurrentHP() const { return CurrentHP; }
-	void SetMaxHP(float InMaxHP) { MaxHP = InMaxHP; }
-	void SetCurrentHP(float InCurrentHP) { CurrentHP = InCurrentHP; }
-	bool IsDead() const { return bIsDead; }
+	virtual void BeginPlay() override;
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	class UFStatComponent* GetStatComponent() { return StatComponent; }
+
+	// 'OnOutOfCurrentHPDelegate' 델리게이트에 바운드할 함수
+	// -- 캐릭터 죽음 처리 함수
+	UFUNCTION()
+	virtual void OnCharacterDeath();
 
 protected:
 	// SpringArm, Camera Component는 Character Class에 포함되어 있지 않기 때문에 직접 추가
@@ -31,13 +35,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFCharacter", meta = (AllowPrivateAccess))
 	TObjectPtr<class UCameraComponent> CameraComponent;
 
-	// 최대 HP
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASCharacter", meta = (AllowPrivateAccess))
-	float MaxHP = 100.f;
-	// 현재 HP
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASCharacter", meta = (AllowPrivateAccess))
-	float CurrentHP = 100.f;
-	// 죽음 상태
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASCharacter", meta = (AllowPrivateAccess))
-	uint8 bIsDead : 1;
+	// Character 클래스에 부착할 Stat Component 데이터를 담을 속성
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AFCharacter", Meta = (AllowPrivateAccess))
+	TObjectPtr<class UFStatComponent> StatComponent;
 };
