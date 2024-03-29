@@ -27,6 +27,9 @@ public:
 	// NPC가 데미지를 받기 위한 함수
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	// 'FCharacter' 클래스에서 상속받은 위젯 세팅 함수
+	virtual void SetWidget(class UFirstUserWidget* InFirstUserWidget) override;
+
 private:
 	// NPC 공격 Task 실행 시 호출될 함수
 	void Attack();
@@ -72,4 +75,8 @@ private:
 
 	// bResult: NPC 공격에 타격된 대상이 있는지
 	bool bResult = false;
+
+	// WidgetComponent에 바인드할 속성
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFNPCharacter", meta = (AllowPrivateAccess))
+	TObjectPtr<class UFWidgetComponent> WidgetComponent;
 };

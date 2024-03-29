@@ -25,6 +25,9 @@ public:
 	UFUNCTION()
 	virtual void OnCharacterDeath();
 
+	// 캐릭터에게 위젯 세팅 -- 자식 클래스에서 각각 알아서 정의할 수 있도록 virtual 정의
+	virtual void SetWidget(class UFirstUserWidget* InFirstUserWidget) {}
+
 protected:
 	// SpringArm, Camera Component는 Character Class에 포함되어 있지 않기 때문에 직접 추가
 	// SpringArmComponent: 3인칭 시점 카메라 구도 설정 돕는 컴포넌트 - 카메라 봉 길이, 컴포넌트 회전 설정
