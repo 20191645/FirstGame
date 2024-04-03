@@ -17,9 +17,6 @@ void UFGameInstance::Init()
 			check(nullptr != GetCharacterStatDataTableRow(i));
 		}
 	}
-
-	// 게임 시작 시 스테이지 단계 초기화
-	CurrentStage = 1;
 }
 
 void UFGameInstance::Shutdown()

@@ -37,15 +37,8 @@ public:
 	// DataTable의 Row 번호를 입력으로 받아서 Row 내용 반환
 	FFStatTableRow* GetCharacterStatDataTableRow(int32 InStage);
 
-	// 'CurrentStage' 속성값 리턴
-	int32 GetCurrentStage() { return CurrentStage; }
-
 private:
 	// DataTable('DT_Character')의 데이터를 가져올 속성
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UFGameInstance", meta = (AllowPrivateAccess))
 	class UDataTable* CharacterStatDataTable;
-
-	// 현재 플레이하는 게임의 스테이지 단계를 저장하는 속성
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UFGameInstance", meta = (AllowPrivateAccess))
-	int32 CurrentStage;
 };

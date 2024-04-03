@@ -37,6 +37,11 @@ public:
 	FOnMaxHPChangeDelegate OnMaxHPChangeDelegate;
 
 private:
+	// 'CurrentStage' 값이 변하면[델리게이트에 변화] 바운드될 함수
+	UFUNCTION()
+	void OnCurrentStageChanged(int32 InOldCurrentStage, int32 InNewCurrentStage);
+
+private:
 	// Game Instance('FGameInstance') 데이터를 담을 속성
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "UFStatComponent", meta = (AllowPrivateAccess))
 	TObjectPtr<class UFGameInstance> GameInstance;

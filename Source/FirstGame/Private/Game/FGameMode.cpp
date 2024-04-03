@@ -2,6 +2,7 @@
 
 #include "Game/FGameMode.h"
 #include "Controllers/FPlayerController.h"
+#include "Game/FPlayerState.h"
 
 AFGameMode::AFGameMode()
 {
@@ -9,4 +10,15 @@ AFGameMode::AFGameMode()
 	// Object 생성하지 않고 Class 정보로 지정하는 이유:
 	// 멀티플레이 고려 - Class 정보로 플레이어 입장마다 Instance를 생성함
 	PlayerControllerClass = AFPlayerController::StaticClass();
+}
+
+void AFGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	// 로그인한 플레이어의 PlayerState 초기화
+	AFPlayerState* PlayerState = NewPlayer->GetPlayerState<AFPlayerState>();
+	if (true == ::IsValid(PlayerState)) {
+		PlayerState->InitPlayerState();
+	}
 }

@@ -13,4 +13,8 @@ class FIRSTGAME_API AFGameMode : public AGameModeBase
 	
 public:
 	AFGameMode();
+
+	// 로그인 후에 호출되는 함수(플레이어 컨트롤러, 폰... 준비 완료)
+	// -- PlayerState 관리
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 };

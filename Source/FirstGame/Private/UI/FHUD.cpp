@@ -16,12 +16,11 @@ void UFHUD::BindStatComponent(UFStatComponent* InStatComponent)
 
 		UFGameInstance* GameInstance = Cast<UFGameInstance>(GetWorld()->GetGameInstance());
 		if (true == ::IsValid(GameInstance)) {
-			int32 CurrentStage = GameInstance->GetCurrentStage();
 			if (nullptr != GameInstance->GetCharacterStatDataTable() ||
-				nullptr != GameInstance->GetCharacterStatDataTableRow(CurrentStage)) {
+				nullptr != GameInstance->GetCharacterStatDataTableRow(1)) {
 				// PlayerController::BeginPlay()가 SStatComponent::BeginPlay()보다 먼저 호출되기 때문에,
 				// SStatComponent::BeginPlay()보다 먼저 호출되는 UI에서 초기화한다
-				float MaxHP = GameInstance->GetCharacterStatDataTableRow(CurrentStage)->MaxHP;
+				float MaxHP = GameInstance->GetCharacterStatDataTableRow(1)->MaxHP;
 				HPBar->SetMaxHP(MaxHP);
 				HPBar->InitializeHPBarWidget(StatComponent.Get());
 			}
