@@ -25,8 +25,15 @@ public:
 	// 'MaxStage' 속성값 Getter
 	int32 GetMaxStage() const { return MaxStage; }
 
+	// 'FPlayerStateSave' 클래스의 속성에 값을 저장할 함수 -- CurrentStage 변화 시 저장
+	void SavePlayerState();
+
 public:
+	// 'CurrentStage' 변화와 바운드될 델리게이트
 	FOnCurrentStageChangedDelegate OnCurrentStageChangedDelegate;
+
+	// 'SaveGame'클래스[FPlayerStateSave]를 저장할 파일명 비슷한 개념
+	static FString SaveSlotName;
 
 private:
 	// GameInstance 내부에 있는 StatComponent 정보(.csv 파일 내용)를 바인드할 속성

@@ -3,6 +3,9 @@
 #include "Game/FPlayerState.h"
 #include "Game/FGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Game/FPlayerStateSave.h"
+
+FString AFPlayerState::SaveSlotName(TEXT("PlayerState"));
 
 AFPlayerState::AFPlayerState()
 {
@@ -20,6 +23,15 @@ void AFPlayerState::InitPlayerState()
 			CurrentStage = 1;
 		}
 	}
+
+	// 'SaveGame' 파일을 통해 저장된 플레이어 정보 가져와서 초기화
+	UFPlayerStateSave* PlayerStateSave = Cast<UFPlayerStateSave>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
+	if (false == ::IsValid(PlayerStateSave)) {
+		// 저장된 'SaveGame' 파일이 없으면 디폴트 값 가져오기
+		PlayerStateSave = GetMutableDefault<UFPlayerStateSave>();
+	}
+	SetPlayerName(PlayerStateSave->PlayerName);
+	SetCurrentStage(PlayerStateSave->CurrentStage);
 }
 
 void AFPlayerState::SetCurrentStage(int32 InCurrentStage)
@@ -33,5 +45,22 @@ void AFPlayerState::SetCurrentStage(int32 InCurrentStage)
 		CurrentStage = ActualStage;
 		// 'CurrentStage' 값 변화가 생겼기 때문에 델리게이트에 연결된 함수들에게 broadcast
 		OnCurrentStageChangedDelegate.Broadcast(OldCurrentStage, CurrentStage);
+	}
+
+	// CurrentStage 값에 변화가 생길때마다 PlayerState에 저장하는 함수 호출
+	SavePlayerState();
+}
+
+void AFPlayerState::SavePlayerState()
+{
+	// 'FPlayerStateState' 클래스 개체 생성 후 값 저장
+	UFPlayerStateSave* PlayerStateSave = NewObject<UFPlayerStateSave>();
+	PlayerStateSave->PlayerName = GetPlayerName();
+	PlayerStateSave->CurrentStage = GetCurrentStage();
+
+	// 'SaveGame'데이터[PlayerStateSave]를 'SaveSlotName' 이름의 슬롯에 저장
+	// -> 파일에 저장되기 때문에 게임을 종료해도 다시 플레이하면 속성 값을 불러와 유지한다
+	if (true == UGameplayStatics::SaveGameToSlot(PlayerStateSave, SaveSlotName, 0)) {
+		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Saved.")));
 	}
 }
