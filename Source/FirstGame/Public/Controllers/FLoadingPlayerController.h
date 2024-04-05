@@ -13,4 +13,7 @@ class FIRSTGAME_API AFLoadingPlayerController : public AFUIPlayerController
 	
 public:
 	virtual void BeginPlay() override;
+
+	// 딜레이 적용 후 실행될 함수 -- OpenLevel()
+	void OpenLevelFunc();
 };

@@ -4,6 +4,7 @@
 #include "UI/FHUD.h"
 #include "Components/FStatComponent.h"
 #include "Characters/FRPGCharacter.h"
+#include "Game/FPlayerState.h"
 
 void AFPlayerController::BeginPlay()
 {
@@ -17,6 +18,11 @@ void AFPlayerController::BeginPlay()
 		HUDWidget = CreateWidget<UFHUD>(this, HUDWidgetClass);
 		if (true == ::IsValid(HUDWidget)) {
 			HUDWidget->AddToViewport();
+
+			AFPlayerState* FPlayerState = GetPlayerState<AFPlayerState>();
+			if (true == ::IsValid(FPlayerState)) {
+				HUDWidget->BindPlayerState(FPlayerState);
+			}
 
 			AFCharacter* PC = GetPawn<AFCharacter>();
 			if (true == ::IsValid(PC)) {

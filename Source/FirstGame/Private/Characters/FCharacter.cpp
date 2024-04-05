@@ -68,8 +68,6 @@ float AFCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACo
     // 데미지 받은만큼 'CurrentHP' 감소
     StatComponent->SetCurrentHP(StatComponent->GetCurrentHP() - FinalDamageAmount);
 
-    UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s [%.1f / %.1f]"), *GetName(), StatComponent->GetCurrentHP(), StatComponent->GetMaxHP()));
-
     return FinalDamageAmount;
 }
 

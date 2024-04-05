@@ -24,6 +24,9 @@ private:
 	// 'ExitGame' 버튼 클릭 시 호출되는 함수
 	UFUNCTION()
 	void OnExitGameButtonClicked();
+	// 'SavedGame' 버튼 클릭 시 호출되는 함수
+	UFUNCTION()
+	void OnSavedGameButtonClicked();
 
 private:
 	// 새 게임 시작 버튼
@@ -32,4 +35,7 @@ private:
 	// 게임 종료 버튼
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFTitleWidget", meta = (AllowPrivateAccess, BindWidget))
 	TObjectPtr<class UButton> ExitGameButton;
+	// 저장된 게임 불러오기 버튼
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFTitleWidget", meta = (AllowPrivateAccess, BindWidget))
+	TObjectPtr<class UButton> SavedGameButton;
 };

@@ -6,6 +6,7 @@
 #include "UI/SW_Bar.h"
 #include "Components/TextBlock.h"
 #include "Game/FGameInstance.h"
+#include "Game/FPlayerState.h"
 
 void UFHUD::BindStatComponent(UFStatComponent* InStatComponent)
 {
@@ -25,5 +26,17 @@ void UFHUD::BindStatComponent(UFStatComponent* InStatComponent)
 				HPBar->InitializeHPBarWidget(StatComponent.Get());
 			}
 		}
+	}
+}
+
+void UFHUD::BindPlayerState(AFPlayerState* InPlayerState)
+{
+	if (true == ::IsValid(InPlayerState)) {
+		PlayerState = InPlayerState;
+
+		// PlayerController::BeginPlay()가 SStatComponent::BeginPlay()보다 먼저 호출되기 때문에,
+		// SStatComponent::BeginPlay()보다 먼저 호출되는 UI에서 초기화한다
+		PlayerNameText->SetText(FText::FromString(PlayerState->GetPlayerName()));
+		CurrentStage = PlayerState->GetCurrentStage();
 	}
 }

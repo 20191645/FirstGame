@@ -8,12 +8,24 @@ void AFLoadingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*
-	// 로딩 화면 딜레이를 위해 해당 코드를 블루프린트로 구현
 	AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
 	if (true == ::IsValid(GM)) {
-		// 다음 레벨로 이동
-		UGameplayStatics::OpenLevel(GM, TEXT("FirstStage"));
+		// 5초 딜레이 후 다음 레벨로 이동할 함수 호출
+		FTimerHandle TimerHandle;
+		float DelayTime = 5.0f;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([&]() {
+			OpenLevelFunc();
+		}), DelayTime, false);
 	}
-	*/
+}
+
+void AFLoadingPlayerController::OpenLevelFunc()
+{
+	AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
+	if (true == ::IsValid(GM)) {
+		// Options 매개변수에서 key값을 통해 value값 가져오기
+		FString NextLevelString = UGameplayStatics::ParseOption(GM->OptionsString, FString(TEXT("NextLevel")));
+		FString SavedTypeString = UGameplayStatics::ParseOption(GM->OptionsString, FString(TEXT("Saved")));
+		UGameplayStatics::OpenLevel(GM, *NextLevelString, false, *SavedTypeString);
+	}
 }
