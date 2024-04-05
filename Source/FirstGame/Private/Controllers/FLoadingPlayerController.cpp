@@ -10,9 +10,9 @@ void AFLoadingPlayerController::BeginPlay()
 
 	AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
 	if (true == ::IsValid(GM)) {
-		// 5초 딜레이 후 다음 레벨로 이동할 함수 호출
+		// 2.5초 딜레이 후 다음 레벨로 이동할 함수 호출
 		FTimerHandle TimerHandle;
-		float DelayTime = 5.0f;
+		float DelayTime = 2.5f;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([&]() {
 			OpenLevelFunc();
 		}), DelayTime, false);

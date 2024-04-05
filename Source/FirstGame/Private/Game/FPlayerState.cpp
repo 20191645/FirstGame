@@ -25,28 +25,17 @@ void AFPlayerState::InitPlayerState()
 		}
 	}
 
-	AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
-	if (true == ::IsValid(GM)) {
-		FString SavedTypeString = UGameplayStatics::ParseOption(GM->OptionsString, FString(TEXT("Saved")));
-		// 저장된 게임 파일을 사용한다
-		if (true == SavedTypeString.Equals("true")) {
-			// 'SaveSlotName' 이름의 슬롯으로부터 'SaveGame'데이터[PlayerStateSave] 불러오기
-			UFPlayerStateSave* PlayerStateSave = Cast<UFPlayerStateSave>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
-			if (false == ::IsValid(PlayerStateSave)) {
-				// GetMutableDefault(): 수정 가능한 CDO 개체 불러오기
-				PlayerStateSave = GetMutableDefault<UFPlayerStateSave>();
-			}
-
-			// 'SaveGame'데이터[PlayerStateSave]에서 읽어온 값으로 초기값 세팅
-			SetPlayerName(PlayerStateSave->PlayerName);
-			SetCurrentStage(PlayerStateSave->CurrentStage);
-		}
-		// 저장된 게임 파일을 사용하지 않는 새 게임 시작
-		else {
-			SetPlayerName(TEXT("Player0"));
-			SetCurrentStage(1);
-		}
+	// 'SaveGame' 파일을 통해 저장된 플레이어 정보 가져와서 초기화
+	UFPlayerStateSave* PlayerStateSave = Cast<UFPlayerStateSave>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
+	if (false == ::IsValid(PlayerStateSave)) {
+		// 저장된 'SaveGame' 파일이 없으면 디폴트 값 가져오기
+		PlayerStateSave = GetMutableDefault<UFPlayerStateSave>();
 	}
+	SetPlayerName(PlayerStateSave->PlayerName);
+	SetCurrentStage(PlayerStateSave->CurrentStage);
+
+	// 플레이어 정보가 바뀌었으므로 저장
+	SavePlayerState();
 }
 
 void AFPlayerState::SetCurrentStage(int32 InCurrentStage)
@@ -75,7 +64,5 @@ void AFPlayerState::SavePlayerState()
 
 	// 'SaveGame'데이터[PlayerStateSave]를 'SaveSlotName' 이름의 슬롯에 저장
 	// -> 파일에 저장되기 때문에 게임을 종료해도 다시 플레이하면 속성 값을 불러와 유지한다
-	if (true == UGameplayStatics::SaveGameToSlot(PlayerStateSave, SaveSlotName, 0)) {
-		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Saved.")));
-	}
+	UGameplayStatics::SaveGameToSlot(PlayerStateSave, SaveSlotName, 0);
 }

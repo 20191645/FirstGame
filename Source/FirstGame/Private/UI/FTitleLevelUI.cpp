@@ -34,10 +34,11 @@ void UFTitleLevelUI::OnNewGameButtonClicked()
 {
 	// 다음 레벨로 이동
 	// OpenLevel() 함수의 Options 매개변수: FString(TEXT("NextLevel=FirstStage?Saved=false"))
-	// => 'NextLevel'이 Key, 'Lobby'이 Value -- Loading 레벨에서는 'NextLevel'을 파싱해서 'FirstStage' 값을 얻어낸다
+	// => 'NextLevel'이 Key, 'LobbyStage'이 Value 
+	// -- Loading 레벨에서는 'NextLevel'을 파싱해서 'LobbyStage' 값을 얻어낸다
 	// NextLevel: 이동할 레벨 이름
 	// Saved: 저장된 게임 파일 쓸지 선택
-	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("LoadingStage")), true, FString(TEXT("NextLevel=FirstStage?Saved=false")));
+	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("LoadingStage")), true, FString(TEXT("NextLevel=LobbyStage?Saved=false")));
 
 }
 
@@ -50,6 +51,7 @@ void UFTitleLevelUI::OnExitGameButtonClicked()
 void UFTitleLevelUI::OnSavedGameButtonClicked()
 {
 	// 다음 레벨로 이동
-	// 'NextLevel'이 Key, 'StudyMap'이 Value -- Loading 레벨에서는 'NextLevel'을 파싱해서 'FirstStage' 값을 얻어낸다
+	// 'NextLevel'이 Key, 'FirstStage'이 Value 
+	// -- Loading 레벨에서는 'NextLevel'을 파싱해서 'FirstStage' 값을 얻어낸다
 	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("LoadingStage")), true, FString(TEXT("NextLevel=FirstStage?Saved=true")));
 }
