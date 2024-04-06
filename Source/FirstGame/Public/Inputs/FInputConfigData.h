@@ -27,4 +27,8 @@ public:
 	// 'IA_Attack'에 대응하는 속성
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputAction> AttackAction;
+
+	// 'IA_Menu'에 대응하는 속성
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UInputAction> MenuAction;
 };

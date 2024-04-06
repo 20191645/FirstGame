@@ -14,6 +14,7 @@
 #include "Animations/FAnimInstance.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/DamageEvents.h"
+#include "Controllers/FPlayerController.h"
 
 AFRPGCharacter::AFRPGCharacter()
     :bIsAttacking(false)
@@ -115,6 +116,8 @@ void AFRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
         // AttackAction('IA_Attack')을 Started 상태에서 Attack 함수와 바인드 시켜준다
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
+        // MenuAction('IA_Menu')을 Started 상태에서 Menu 함수와 바인드 시켜준다
+        EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->MenuAction, ETriggerEvent::Started, this, &ThisClass::Menu);
     }
 }
 
@@ -284,4 +287,13 @@ void AFRPGCharacter::EndAttack(UAnimMontage* InAnimMontage, bool bInterrupted)
     bIsAttackKeyPressed = false;
     // 공격 액션이 끝났으므로 다시 움직이는 모드로 변경
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+}
+
+void AFRPGCharacter::Menu(const FInputActionValue& InValue)
+{
+    // PlayerController 클래스에서 메뉴 토글
+    AFPlayerController* PlayerController = GetController<AFPlayerController>();
+    if (true == ::IsValid(PlayerController)) {
+        PlayerController->ToggleMenu();
+    }
 }

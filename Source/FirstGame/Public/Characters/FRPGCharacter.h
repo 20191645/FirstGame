@@ -50,13 +50,14 @@ private:
 
 	// 함수 순서: Begin(공격 시작) - Check(공격키를 누름) - End(공격 끝)
 	void BeginAttack();
-
 	// CheckCanNextAttack 델리게이트와 바운드할 함수
 	UFUNCTION()
 	void CheckCanNextAttack();
-
 	UFUNCTION()
 	void EndAttack(class UAnimMontage* InAnimMontage, bool bInterrupted);
+
+	// 'IA_Menu' 액션에 바인드할 함수
+	void Menu(const FInputActionValue& InValue);
 
 private:
 	// Input Config Data의 액션들과 캐릭터를 바인드 시켜줄 데이터
