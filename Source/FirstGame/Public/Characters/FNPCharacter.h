@@ -76,7 +76,7 @@ private:
 	// bResult: NPC 공격에 타격된 대상이 있는지
 	bool bResult = false;
 
-	// WidgetComponent에 바인드할 속성
+	// 'WBP_HPBar'에 바인드할 속성 -- WBP_HPBar
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFNPCharacter", meta = (AllowPrivateAccess))
 	TObjectPtr<class UFWidgetComponent> WidgetComponent;
 };

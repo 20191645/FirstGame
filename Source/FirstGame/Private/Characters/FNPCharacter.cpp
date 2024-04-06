@@ -27,7 +27,7 @@ AFNPCharacter::AFNPCharacter()
     // 위젯의 위치를 캐릭터 머리 위로 설정
     WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
     WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
-    WidgetComponent->SetDrawSize(FVector2D(150.0f, 50.0f));
+    WidgetComponent->SetDrawSize(FVector2D(180.0f, 50.0f));
     WidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
