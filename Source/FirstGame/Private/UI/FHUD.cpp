@@ -37,6 +37,5 @@ void UFHUD::BindPlayerState(AFPlayerState* InPlayerState)
 		// PlayerController::BeginPlay()가 SStatComponent::BeginPlay()보다 먼저 호출되기 때문에,
 		// SStatComponent::BeginPlay()보다 먼저 호출되는 UI에서 초기화한다
 		PlayerNameText->SetText(FText::FromString(PlayerState->GetPlayerName()));
-		CurrentStage = PlayerState->GetCurrentStage();
 	}
 }

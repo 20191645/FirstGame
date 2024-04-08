@@ -31,13 +31,10 @@ protected:
 	TObjectPtr<class USW_HPBar> HPBar;
 
 	// PlayerState 속성
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFHUD")
 	TWeakObjectPtr<class AFPlayerState> PlayerState;
 
 	// 플레이어 이름
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFHUD", Meta = (BindWidget))
 	TObjectPtr<class UTextBlock> PlayerNameText;
-
-	// 현재 스테이지 단계
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFHUD")
-	int32 CurrentStage;
 };

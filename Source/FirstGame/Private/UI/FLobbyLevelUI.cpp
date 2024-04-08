@@ -36,7 +36,5 @@ void UFLobbyLevelUI::SaveInitializedSaveData()
 	PlayerStateSave->CurrentStage = 1;
 
 	// Save Game 파일 저장
-	if (true == UGameplayStatics::SaveGameToSlot(PlayerStateSave, TEXT("PlayerState"), 0)) {
-		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Saved.")));
-	}
+	UGameplayStatics::SaveGameToSlot(PlayerStateSave, TEXT("PlayerState"), 0);
 }
