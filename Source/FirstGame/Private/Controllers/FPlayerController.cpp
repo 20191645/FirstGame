@@ -6,6 +6,7 @@
 #include "Characters/FRPGCharacter.h"
 #include "Game/FPlayerState.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void AFPlayerController::ToggleMenu()
 {
@@ -70,7 +71,6 @@ void AFPlayerController::BeginPlay()
 		if (true == ::IsValid(MenuUIInstance)) {
 			// 상단에 띄운다
 			MenuUIInstance->AddToViewport(3);
-
 			MenuUIInstance->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}

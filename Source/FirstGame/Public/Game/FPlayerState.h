@@ -6,7 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "FPlayerState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCurrentStageChangedDelegate, int32, InOldCurrentStage, int32, InNewCurrentStage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCurrentStageChangedDelegate, int32, NewCurrentStage);
 
 UCLASS()
 class FIRSTGAME_API AFPlayerState : public APlayerState
@@ -20,7 +20,6 @@ public:
 
 	// 'CurrentStage' 속성값 Getter, Setter
 	int32 GetCurrentStage() const { return CurrentStage; }
-
 	// 블루프린트에서 이용할 수 있도록 UFUNCTION() 처리
 	UFUNCTION(BlueprintCallable, Category = "AFPlayerState")
 	void SetCurrentStage(int32 InCurrentStage);

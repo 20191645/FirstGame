@@ -16,28 +16,33 @@ UFStatComponent::UFStatComponent()
 void UFStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	GameInstance = Cast<UFGameInstance>(GetWorld()->GetGameInstance());
-	if (true == ::IsValid(GameInstance)) {
-		// 'MaxHP, CurrentHP' 데이터를 담고 있는 DataTable 유효 확인
-		if (nullptr != GameInstance->GetCharacterStatDataTable() ||
-			nullptr != GameInstance->GetCharacterStatDataTableRow(1)) {
-			// DataTable에서 'CurrnetStage'번째 Row의 'MaxHP'값 가져오기
-			float NewMaxHP = GameInstance->GetCharacterStatDataTableRow(1)->MaxHP;
-			SetMaxHP(NewMaxHP);
-			SetCurrentHP(MaxHP);
-		}
-	}
 
 	// StatComponent를 소유한 캐릭터 불러오기
 	AFCharacter* OwningPlayerCharacter = Cast<AFCharacter>(GetOwner());
+	AFPlayerState* PS;
+	int32 CurrentStage = 1;
 	if (true == ::IsValid(OwningPlayerCharacter)) {
-		AFPlayerState* PS = Cast<AFPlayerState>(OwningPlayerCharacter->GetPlayerState());
+		PS = Cast<AFPlayerState>(OwningPlayerCharacter->GetPlayerState());
 		if (true == ::IsValid(PS)) {
+			// 현재 CurrentStage 가져오기
+			CurrentStage = PS->GetCurrentStage();
+
 			if (false == PS->OnCurrentStageChangedDelegate.IsAlreadyBound(this, &ThisClass::OnCurrentStageChanged)) {
 				// 'OnCurrentStageChanged' 델리게이트에 OnCurrentStageChanged() 멤버 함수 바인드
 				PS->OnCurrentStageChangedDelegate.AddDynamic(this, &ThisClass::OnCurrentStageChanged);
 			}
+		}
+	}
+
+	GameInstance = Cast<UFGameInstance>(GetWorld()->GetGameInstance());
+	if (true == ::IsValid(GameInstance)) {
+		// 'MaxHP, CurrentHP' 데이터를 담고 있는 DataTable 유효 확인
+		if (nullptr != GameInstance->GetCharacterStatDataTable() ||
+			nullptr != GameInstance->GetCharacterStatDataTableRow(CurrentStage)) {
+			// DataTable에서 'CurrnetStage'번째 Row의 'MaxHP'값 가져오기
+			float NewMaxHP = GameInstance->GetCharacterStatDataTableRow(CurrentStage)->MaxHP;
+			SetMaxHP(NewMaxHP);
+			SetCurrentHP(MaxHP);
 		}
 	}
 }
@@ -50,7 +55,7 @@ void UFStatComponent::SetMaxHP(float InMaxHP)
 		OnMaxHPChangeDelegate.Broadcast(MaxHP, InMaxHP);
 	}
 
-	// 'InMaxHP'의 값을 0 ~ 9999 범위로 자른다
+	// 'InMaxHP'의 값을 0 ~ 999 범위로 자른다
 	MaxHP = FMath::Clamp<float>(InMaxHP, 0.f, 1000);
 }
 
@@ -71,10 +76,12 @@ void UFStatComponent::SetCurrentHP(float InCurrentHP)
 	}
 }
 
-void UFStatComponent::OnCurrentStageChanged(int32 InOldCurrentStage, int32 InNewCurrentStage)
+void UFStatComponent::OnCurrentStageChanged(int32 NewCurrentStage)
 {
+	UE_LOG(LogTemp, Log, TEXT("UFStatComponent::OnCurrentStageChanged()"));
+
 	// 스테이지 단계 변화 시 HP 업데이트
-	SetMaxHP(GameInstance->GetCharacterStatDataTableRow(InNewCurrentStage)->MaxHP);
-	SetCurrentHP(GameInstance->GetCharacterStatDataTableRow(InNewCurrentStage)->MaxHP);
+	SetMaxHP(GameInstance->GetCharacterStatDataTableRow(NewCurrentStage)->MaxHP);
+	SetCurrentHP(GameInstance->GetCharacterStatDataTableRow(NewCurrentStage)->MaxHP);
 }
 

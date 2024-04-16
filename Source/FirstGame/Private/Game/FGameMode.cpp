@@ -3,6 +3,8 @@
 #include "Game/FGameMode.h"
 #include "Controllers/FPlayerController.h"
 #include "Game/FPlayerState.h"
+#include "Characters/FCharacter.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AFGameMode::AFGameMode()
 {
@@ -15,10 +17,28 @@ AFGameMode::AFGameMode()
 void AFGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-
+	
 	// 로그인한 플레이어의 PlayerState 초기화
 	AFPlayerState* PlayerState = NewPlayer->GetPlayerState<AFPlayerState>();
 	if (true == ::IsValid(PlayerState)) {
+		// PlayerState의 델리게이트에 CurrentStageChanged() 멤버 함수 바인드
+		PlayerState->OnCurrentStageChangedDelegate.AddDynamic(this, &ThisClass::CurrentStageChanged);
 		PlayerState->InitPlayerState();
+	}
+}
+
+void AFGameMode::CurrentStageChanged(int32 NewCurrentStage)
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (true == ::IsValid(PlayerController))
+	{
+		// PlayerStart Tag(==CurrentStage)로 찾기
+		FString SpotName = FString::FromInt(NewCurrentStage);
+		AActor* StartSpot = FindPlayerStart(PlayerController, SpotName);
+		// 플레이어 캐릭터 위치 이동
+		AFCharacter* Player = Cast<AFCharacter>(PlayerController->GetCharacter());
+		Player->SetActorLocationAndRotation(StartSpot->GetActorLocation(), StartSpot->GetActorRotation());
+		// 플레이어 캐릭터 스폰 위치 변경
+		RestartPlayerAtPlayerStart(PlayerController, StartSpot);
 	}
 }

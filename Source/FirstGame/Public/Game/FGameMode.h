@@ -17,4 +17,9 @@ public:
 	// 로그인 후에 호출되는 함수(플레이어 컨트롤러, 폰... 준비 완료)
 	// -- PlayerState 관리
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+private:
+	// OnCurrentStageChanged 델리게이트와 바운드할 함수
+	UFUNCTION()
+	void CurrentStageChanged(int32 NewCurrentStage);
 };

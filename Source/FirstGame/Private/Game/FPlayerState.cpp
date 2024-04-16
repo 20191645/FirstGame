@@ -14,6 +14,8 @@ AFPlayerState::AFPlayerState()
 
 void AFPlayerState::InitPlayerState()
 {
+	UE_LOG(LogTemp, Log, TEXT("AFPlayerState::InitPlayerState()"));
+
 	FGI = Cast<UFGameInstance>(GetWorld()->GetGameInstance());
 	if (true == ::IsValid(FGI)) {
 		// Stat Data Table 유효 검사
@@ -40,7 +42,8 @@ void AFPlayerState::InitPlayerState()
 
 void AFPlayerState::SetCurrentStage(int32 InCurrentStage)
 {
-	int32 OldCurrentStage = CurrentStage;
+	UE_LOG(LogTemp, Log, TEXT("AFPlayerState::SetCurrentStage()"));
+
 	// 'InCurrentStage' 값을 1 ~ MaxStage 범위로 자르기
 	int32 ActualStage = FMath::Clamp<int32>(InCurrentStage, 1, MaxStage);
 
@@ -48,7 +51,7 @@ void AFPlayerState::SetCurrentStage(int32 InCurrentStage)
 	if (nullptr != RowData) {
 		CurrentStage = ActualStage;
 		// 'CurrentStage' 값 변화가 생겼기 때문에 델리게이트에 연결된 함수들에게 broadcast
-		OnCurrentStageChangedDelegate.Broadcast(OldCurrentStage, CurrentStage);
+		OnCurrentStageChangedDelegate.Broadcast(CurrentStage);
 	}
 
 	// CurrentStage 값에 변화가 생길때마다 PlayerState에 저장하는 함수 호출
