@@ -59,6 +59,11 @@ private:
 	// 'IA_Menu' 액션에 바인드할 함수
 	void Menu(const FInputActionValue& InValue);
 
+	// 'IA_Run' 액션 실행중에 바인드할 함수
+	void Running(const FInputActionValue& InValue);
+	// 'IA_Run' 액션 중단시에 바인드할 함수
+	void StopRunning(const FInputActionValue& InValue);
+
 private:
 	// Input Config Data의 액션들과 캐릭터를 바인드 시켜줄 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", Meta = (AllowPrivateAccess))

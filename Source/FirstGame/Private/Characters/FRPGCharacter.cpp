@@ -118,6 +118,11 @@ void AFRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
         // MenuAction('IA_Menu')을 Started 상태에서 Menu 함수와 바인드 시켜준다
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->MenuAction, ETriggerEvent::Started, this, &ThisClass::Menu);
+        // MenuAction('IA_Run')을 Triggered 상태에서 Running 함수와 바인드 시켜준다
+        EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->RunAction, ETriggerEvent::Triggered, this, &ThisClass::Running);
+        // MenuAction('IA_Run')을 Completed 상태에서 StopRunning 함수와 바인드 시켜준다
+        EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->RunAction, ETriggerEvent::Completed, this, &ThisClass::StopRunning);
+
     }
 }
 
@@ -296,4 +301,16 @@ void AFRPGCharacter::Menu(const FInputActionValue& InValue)
     if (true == ::IsValid(PlayerController)) {
         PlayerController->ToggleMenu();
     }
+}
+
+void AFRPGCharacter::Running(const FInputActionValue& InValue)
+{
+    // 캐릭터 속력을 높인다
+    GetCharacterMovement()->MaxWalkSpeed = 800.f;
+}
+
+void AFRPGCharacter::StopRunning(const FInputActionValue& InValue)
+{
+    // 캐릭터 속력을 원래대로 돌아오게 한다
+    GetCharacterMovement()->MaxWalkSpeed = 500.f;
 }
