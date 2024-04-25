@@ -15,6 +15,7 @@
 #include "Engine/EngineTypes.h"
 #include "Engine/DamageEvents.h"
 #include "Controllers/FPlayerController.h"
+#include "Components/FBuffComponent.h"
 
 AFRPGCharacter::AFRPGCharacter()
     :bIsAttacking(false)
@@ -54,6 +55,9 @@ AFRPGCharacter::AFRPGCharacter()
 
     // Collision Preset('FCharacter') 설정
     GetCapsuleComponent()->SetCollisionProfileName(TEXT("FCharacter"));
+
+    // BuffComponent 오브젝트 할당
+    BuffComponent = CreateDefaultSubobject<UFBuffComponent>(TEXT("BuffComponent"));
 }
 
 void AFRPGCharacter::BeginPlay()
@@ -82,6 +86,15 @@ void AFRPGCharacter::BeginPlay()
         AnimInstance->OnCheckHitDelegate.AddDynamic(this, &ThisClass::CheckHit);
         // Animation Notify(CheckCanNextAttack)의 델리게이트에 CheckCanNextAttack() 멤버 함수 바인드
         AnimInstance->OnCheckCanNextAttackDelegate.AddDynamic(this, &ThisClass::CheckCanNextAttack);
+    }
+
+    if (false == ::IsValid(BuffComponent)) {
+        return;
+    }
+
+    if (false == BuffComponent->OnCurrentStackChangeDelegate.IsAlreadyBound(this, &ThisClass::OnCurrentStackChange)) {
+        // 'OnOutOfCurrentHPDelegate'에 'OnCharacterDeath()' 멤버함수 바인드
+        BuffComponent->OnCurrentStackChangeDelegate.AddDynamic(this, &ThisClass::OnCurrentStackChange);
     }
 }
 
@@ -313,4 +326,55 @@ void AFRPGCharacter::StopRunning(const FInputActionValue& InValue)
 {
     // 캐릭터 속력을 원래대로 돌아오게 한다
     GetCharacterMovement()->MaxWalkSpeed = 500.f;
+}
+
+void AFRPGCharacter::OnCurrentStackChange(int32 InCurrentStack)
+{
+    FString BuffName = BuffComponent->GetBuffName();
+    float Duration = BuffComponent->GetDuration();
+    // 버프 호출 횟수 설정
+    BuffCallsRemaining = Duration;
+
+    // Stack 초기화 시 버프 상태 초기화
+    if (InCurrentStack <= 0) {
+        if (BuffName == "Slow") {
+            GetCharacterMovement()->MaxWalkSpeed = 500.f;
+        }
+    }
+    else {
+        if (BuffName == "Slow") {
+            GetCharacterMovement()->MaxWalkSpeed = 500.f - InCurrentStack * 100.f;
+            // 지속 시간 이후 버프 초기화
+            GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, FTimerDelegate::CreateLambda([&]()
+            {
+                BuffDurationEnd();
+            }), Duration, false);
+        }
+        else if (BuffName == "Poison") {
+            // 지속 시간 동안 1초에 한 번씩 틱 데미지 입히기
+            GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, this, &ThisClass::PoisonBuff, 1.0f, true);
+        }
+    }
+}
+
+void AFRPGCharacter::BuffDurationEnd()
+{
+    // 타이머 초기화
+    GetWorld()->GetTimerManager().ClearTimer(MyTimerHandle);
+    // 버프 스택 초기화
+    BuffComponent->SetCurrentStack(0);
+}
+
+void AFRPGCharacter::PoisonBuff()
+{
+    // 이 함수를 충분히 호출했으면 버프 초기화 <- 함수 호출마다 횟수 차감
+    if (BuffCallsRemaining-- <= 0)
+    {
+        BuffDurationEnd();
+    }
+
+    // 데미지 입기
+    FDamageEvent DamageEvent;
+    int32 CurrentStack = BuffComponent->GetCurrentStack();
+    TakeDamage(2.f * CurrentStack, DamageEvent, GetController(), this);
 }

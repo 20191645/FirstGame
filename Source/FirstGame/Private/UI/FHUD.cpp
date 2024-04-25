@@ -8,6 +8,7 @@
 #include "Game/FGameInstance.h"
 #include "Game/FPlayerState.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/FBuffComponent.h"
 
 void UFHUD::BindStatComponent(UFStatComponent* InStatComponent)
 {
@@ -35,5 +36,12 @@ void UFHUD::BindPlayerState(AFPlayerState* InPlayerState)
 	if (true == ::IsValid(InPlayerState)) {
 		PlayerState = InPlayerState;
 		PlayerNameText->SetText(FText::FromString(PlayerState->GetPlayerName()));
+	}
+}
+
+void UFHUD::BindBuffComponent(UFBuffComponent* InBuffComponent)
+{
+	if (true == ::IsValid(InBuffComponent)) {
+		BuffComponent = InBuffComponent;
 	}
 }

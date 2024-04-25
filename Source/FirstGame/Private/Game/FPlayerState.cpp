@@ -14,8 +14,6 @@ AFPlayerState::AFPlayerState()
 
 void AFPlayerState::InitPlayerState()
 {
-	UE_LOG(LogTemp, Log, TEXT("AFPlayerState::InitPlayerState()"));
-
 	FGI = Cast<UFGameInstance>(GetWorld()->GetGameInstance());
 	if (true == ::IsValid(FGI)) {
 		// Stat Data Table 유효 검사
@@ -42,8 +40,6 @@ void AFPlayerState::InitPlayerState()
 
 void AFPlayerState::SetCurrentStage(int32 InCurrentStage)
 {
-	UE_LOG(LogTemp, Log, TEXT("AFPlayerState::SetCurrentStage()"));
-
 	// 'InCurrentStage' 값을 1 ~ MaxStage 범위로 자르기
 	int32 ActualStage = FMath::Clamp<int32>(InCurrentStage, 1, MaxStage);
 

@@ -7,6 +7,7 @@
 #include "Game/FPlayerState.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/FBuffComponent.h"
 
 void AFPlayerController::ToggleMenu()
 {
@@ -55,11 +56,16 @@ void AFPlayerController::BeginPlay()
 				HUDWidget->BindPlayerState(FPlayerState);
 			}
 
-			AFCharacter* PC = GetPawn<AFCharacter>();
+			AFRPGCharacter* PC = GetPawn<AFRPGCharacter>();
 			if (true == ::IsValid(PC)) {
 				UFStatComponent* StatComponent = PC->GetStatComponent();
 				if (true == ::IsValid(StatComponent)) {
 					HUDWidget->BindStatComponent(StatComponent);
+				}
+
+				UFBuffComponent* BuffComponent = PC->GetBuffComponent();
+				if (true == ::IsValid(BuffComponent)) {
+					HUDWidget->BindBuffComponent(BuffComponent);
 				}
 			}
 		}

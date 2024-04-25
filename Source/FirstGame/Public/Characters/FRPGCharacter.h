@@ -32,6 +32,9 @@ public:
 	// Damage: 데미지 세기, DamageEvent: 데미지 종류, EventInstigator: 공격 명령 내린 컨트롤러, DamageCauser: 데미지 전달을 위해 사용한 액터
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;;
 
+	UFUNCTION()
+	class UFBuffComponent* GetBuffComponent() { return BuffComponent; }
+
 protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
@@ -63,6 +66,15 @@ private:
 	void Running(const FInputActionValue& InValue);
 	// 'IA_Run' 액션 중단시에 바인드할 함수
 	void StopRunning(const FInputActionValue& InValue);
+
+	// 'OnCurrentStackChangeDelegate' 델리게이트에 바운드될 함수
+	UFUNCTION()
+	void OnCurrentStackChange(int32 InCurrentStack);
+
+	// 버프 지속 시간 종료 시 호출될 함수
+	void BuffDurationEnd();
+	// Poison 디버프일 때 호출될 함수
+	void PoisonBuff();
 
 private:
 	// Input Config Data의 액션들과 캐릭터를 바인드 시켜줄 데이터
@@ -100,4 +112,13 @@ private:
 	float AttackRange = 100.f;
 	// 충돌 탐색 구체 반지름
 	float AttackRadius = 50.f;
+
+	// 클래스에 부착할 BuffComponent 데이터를 담을 속성
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", Meta = (AllowPrivateAccess))
+	TObjectPtr<class UFBuffComponent> BuffComponent;
+
+	// 버프 효과를 수행하기 위해 사용할 타이머
+	FTimerHandle MyTimerHandle;
+	// 버프 지속 시간동안 남은 호출 횟수
+	int32 BuffCallsRemaining;
 };

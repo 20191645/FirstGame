@@ -19,10 +19,9 @@ void UFStatComponent::BeginPlay()
 
 	// StatComponent를 소유한 캐릭터 불러오기
 	AFCharacter* OwningPlayerCharacter = Cast<AFCharacter>(GetOwner());
-	AFPlayerState* PS;
 	int32 CurrentStage = 1;
 	if (true == ::IsValid(OwningPlayerCharacter)) {
-		PS = Cast<AFPlayerState>(OwningPlayerCharacter->GetPlayerState());
+		AFPlayerState* PS = Cast<AFPlayerState>(OwningPlayerCharacter->GetPlayerState());
 		if (true == ::IsValid(PS)) {
 			// 현재 CurrentStage 가져오기
 			CurrentStage = PS->GetCurrentStage();
@@ -78,10 +77,7 @@ void UFStatComponent::SetCurrentHP(float InCurrentHP)
 
 void UFStatComponent::OnCurrentStageChanged(int32 NewCurrentStage)
 {
-	UE_LOG(LogTemp, Log, TEXT("UFStatComponent::OnCurrentStageChanged()"));
-
 	// 스테이지 단계 변화 시 HP 업데이트
 	SetMaxHP(GameInstance->GetCharacterStatDataTableRow(NewCurrentStage)->MaxHP);
 	SetCurrentHP(GameInstance->GetCharacterStatDataTableRow(NewCurrentStage)->MaxHP);
 }
-

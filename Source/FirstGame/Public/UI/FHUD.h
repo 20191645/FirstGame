@@ -18,6 +18,9 @@ public:
 	// 'PlayerState' 속성을 변수로 입력받아 바인드할 함수
 	void BindPlayerState(class AFPlayerState* InPlayerState);
 
+	// 'BuffComponent' 속성을 변수로 입력받아 바인드할 함수
+	void BindBuffComponent(class UFBuffComponent* InBuffComponent);
+
 protected:
 	// HP 데이터를 가져오기 위한 속성
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFHUD")
@@ -37,4 +40,8 @@ protected:
 	// 플레이어 이름
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFHUD", Meta = (BindWidget))
 	TObjectPtr<class UTextBlock> PlayerNameText;
+
+	// 버프/디버프 정보를 가져오기 위한 속성
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFHUD")
+	TWeakObjectPtr<class UFBuffComponent> BuffComponent;
 };

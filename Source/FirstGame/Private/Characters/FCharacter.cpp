@@ -44,6 +44,7 @@ AFCharacter::AFCharacter()
     // BrakingDecelerationWalking: 움직임을 멈췄을 때 멈추는 속도
     GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
+    // StatComponent 오브젝트 할당
     StatComponent = CreateDefaultSubobject<UFStatComponent>(TEXT("StatComponent"));
 }
 
