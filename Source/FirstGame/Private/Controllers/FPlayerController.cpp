@@ -56,14 +56,14 @@ void AFPlayerController::BeginPlay()
 				HUDWidget->BindPlayerState(FPlayerState);
 			}
 
-			AFRPGCharacter* PC = GetPawn<AFRPGCharacter>();
-			if (true == ::IsValid(PC)) {
-				UFStatComponent* StatComponent = PC->GetStatComponent();
+			AFRPGCharacter* RPGC = GetPawn<AFRPGCharacter>();
+			if (true == ::IsValid(RPGC)) {
+				UFStatComponent* StatComponent = RPGC->GetStatComponent();
 				if (true == ::IsValid(StatComponent)) {
 					HUDWidget->BindStatComponent(StatComponent);
 				}
 
-				UFBuffComponent* BuffComponent = PC->GetBuffComponent();
+				UFBuffComponent* BuffComponent = RPGC->GetBuffComponent();
 				if (true == ::IsValid(BuffComponent)) {
 					HUDWidget->BindBuffComponent(BuffComponent);
 				}
@@ -71,11 +71,11 @@ void AFPlayerController::BeginPlay()
 		}
 	}
 
-	// UserWidget 클래스를 토대로 인스턴스(개체) 생성
+	// MenuUIClass 클래스를 토대로 MenuUIInstance(개체) 생성
 	if (true == ::IsValid(MenuUIClass)) {
 		MenuUIInstance = CreateWidget<UUserWidget>(this, MenuUIClass);
 		if (true == ::IsValid(MenuUIInstance)) {
-			// 상단에 띄운다
+			// Viewport에 자리 잡는다
 			MenuUIInstance->AddToViewport(3);
 			MenuUIInstance->SetVisibility(ESlateVisibility::Collapsed);
 		}

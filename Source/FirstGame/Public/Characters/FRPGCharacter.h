@@ -76,6 +76,13 @@ private:
 	// Poison 디버프일 때 호출될 함수
 	void PoisonBuff();
 
+	// 'OnOutOfCurrentHPDelegate' 델리게이트에 바운드될 함수
+	UFUNCTION()
+	void OnCharacterDeath();
+
+	// 플레이어 캐릭터 리스폰 함수
+	void Respawn();
+
 private:
 	// Input Config Data의 액션들과 캐릭터를 바인드 시켜줄 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", Meta = (AllowPrivateAccess))
@@ -118,7 +125,11 @@ private:
 	TObjectPtr<class UFBuffComponent> BuffComponent;
 
 	// 버프 효과를 수행하기 위해 사용할 타이머
-	FTimerHandle MyTimerHandle;
+	FTimerHandle myTimerHandle;
 	// 버프 지속 시간동안 남은 호출 횟수
 	int32 BuffCallsRemaining;
+
+	// 리스폰 시 실행할 Particle 효과 데이터
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", meta = (AllowPrivateAccess))
+	TObjectPtr<class UParticleSystemComponent> ParticleSystemComponent;
 };

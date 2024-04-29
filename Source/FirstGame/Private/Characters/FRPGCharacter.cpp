@@ -16,6 +16,11 @@
 #include "Engine/DamageEvents.h"
 #include "Controllers/FPlayerController.h"
 #include "Components/FBuffComponent.h"
+#include "Components/FStatComponent.h"
+#include "Game/FGameMode.h"
+#include "Kismet/GameplayStatics.h"
+#include "Game/FPlayerState.h"
+#include "Particles/ParticleSystemComponent.h"
 
 AFRPGCharacter::AFRPGCharacter()
     :bIsAttacking(false)
@@ -58,6 +63,12 @@ AFRPGCharacter::AFRPGCharacter()
 
     // BuffComponent 오브젝트 할당
     BuffComponent = CreateDefaultSubobject<UFBuffComponent>(TEXT("BuffComponent"));
+
+    // ParticleSystemComponent 오브젝트 할당
+    ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
+    ParticleSystemComponent->SetupAttachment(GetRootComponent());
+    // 처음부터 Particle을 터트리지 않는다 [false]
+    ParticleSystemComponent->SetAutoActivate(false);
 }
 
 void AFRPGCharacter::BeginPlay()
@@ -88,13 +99,15 @@ void AFRPGCharacter::BeginPlay()
         AnimInstance->OnCheckCanNextAttackDelegate.AddDynamic(this, &ThisClass::CheckCanNextAttack);
     }
 
-    if (false == ::IsValid(BuffComponent)) {
-        return;
+    // 'OnOutOfCurrentHPDelegate'에 'OnCharacterDeath()' 멤버함수 바인드
+    if (true == ::IsValid(BuffComponent)) {
+        BuffComponent->OnCurrentStackChangeDelegate.AddDynamic(this, &ThisClass::OnCurrentStackChange);
     }
 
-    if (false == BuffComponent->OnCurrentStackChangeDelegate.IsAlreadyBound(this, &ThisClass::OnCurrentStackChange)) {
-        // 'OnOutOfCurrentHPDelegate'에 'OnCharacterDeath()' 멤버함수 바인드
-        BuffComponent->OnCurrentStackChangeDelegate.AddDynamic(this, &ThisClass::OnCurrentStackChange);
+    // 'OnOutOfCurrentHPDelegate'에 'OnCharacterDeath()' 멤버함수 바인드
+    UFStatComponent* MyStatComponent = Cast<UFStatComponent>(Super::GetStatComponent());
+    if (true == ::IsValid(MyStatComponent)) {
+        MyStatComponent->OnOutOfCurrentHPDelegate.AddDynamic(this, &ThisClass::OnCharacterDeath);
     }
 }
 
@@ -224,6 +237,7 @@ void AFRPGCharacter::CheckHit()
         }
     }
 
+    /*
 #pragma region DebugDrawing
     // 캡슐 탐색 시작 위치에서 끝 위치로 향하는 벡터 (캐릭터의 Forward 방향)
     FVector TraceVec = GetActorForwardVector() * AttackRange;
@@ -249,6 +263,7 @@ void AFRPGCharacter::CheckHit()
         DebugLifeTime
     );
 #pragma endregion 
+    */
 }
 
 void AFRPGCharacter::BeginAttack()
@@ -345,14 +360,14 @@ void AFRPGCharacter::OnCurrentStackChange(int32 InCurrentStack)
         if (BuffName == "Slow") {
             GetCharacterMovement()->MaxWalkSpeed = 500.f - InCurrentStack * 100.f;
             // 지속 시간 이후 버프 초기화
-            GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, FTimerDelegate::CreateLambda([&]()
+            GetWorld()->GetTimerManager().SetTimer(myTimerHandle, FTimerDelegate::CreateLambda([&]()
             {
                 BuffDurationEnd();
             }), Duration, false);
         }
         else if (BuffName == "Poison") {
             // 지속 시간 동안 1초에 한 번씩 틱 데미지 입히기
-            GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, this, &ThisClass::PoisonBuff, 1.0f, true);
+            GetWorld()->GetTimerManager().SetTimer(myTimerHandle, this, &ThisClass::PoisonBuff, 1.0f, true);
         }
     }
 }
@@ -360,7 +375,7 @@ void AFRPGCharacter::OnCurrentStackChange(int32 InCurrentStack)
 void AFRPGCharacter::BuffDurationEnd()
 {
     // 타이머 초기화
-    GetWorld()->GetTimerManager().ClearTimer(MyTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(myTimerHandle);
     // 버프 스택 초기화
     BuffComponent->SetCurrentStack(0);
 }
@@ -376,5 +391,64 @@ void AFRPGCharacter::PoisonBuff()
     // 데미지 입기
     FDamageEvent DamageEvent;
     int32 CurrentStack = BuffComponent->GetCurrentStack();
-    TakeDamage(2.f * CurrentStack, DamageEvent, GetController(), this);
+    TakeDamage(10.f * CurrentStack, DamageEvent, GetController(), this);
+}
+
+void AFRPGCharacter::OnCharacterDeath()
+{
+    // 캐릭터 움직임 막기
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+    // 1.3초 후 플레이어 리스폰
+    FTimerHandle respawnTimerHandle;
+    GetWorld()->GetTimerManager().SetTimer(respawnTimerHandle, FTimerDelegate::CreateLambda([&]()
+    {
+        SetActorHiddenInGame(true);
+        GetWorld()->GetTimerManager().SetTimer(respawnTimerHandle, FTimerDelegate::CreateLambda([&]() {
+            Respawn();
+        }), 1.7f, false);
+    }), 1.3f, false);
+}
+
+void AFRPGCharacter::Respawn()
+{
+    UFStatComponent* MyStatComponent = Cast<UFStatComponent>(Super::GetStatComponent());
+    if (false == ::IsValid(MyStatComponent)) {
+        return;
+    }
+    AGameModeBase* MyMode = Cast<AGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+    if (false == ::IsValid(MyMode)) {
+        return;
+    }
+    APlayerController* PC = Cast<APlayerController>(GetController());
+    if (false == ::IsValid(PC)) {
+        return;
+    }
+    AFPlayerState* FPlayerState = GetPlayerState<AFPlayerState>();
+    if (false == ::IsValid(FPlayerState)) {
+        return;
+    }
+    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
+    if (false == ::IsValid(AnimInstance)) {
+        return;
+    }
+
+    // 캐릭터 죽음 상태 초기화
+    AnimInstance->bIsDead = false;
+
+    // PlayerStart Tag(==CurrentStage)로 찾기
+    int32 CurrentStage = FPlayerState->GetCurrentStage();
+    FString SpotName = FString::FromInt(CurrentStage);
+    AActor* StartSpot = MyMode->FindPlayerStart(PC, SpotName);
+
+    // 플레이어 캐릭터 리스폰
+    SetActorLocationAndRotation(StartSpot->GetActorLocation(), StartSpot->GetActorRotation());
+    ParticleSystemComponent->Activate(true);
+    SetActorHiddenInGame(false);
+
+    // 캐릭터 HP 리셋
+    MyStatComponent->SetCurrentHP(MyStatComponent->GetMaxHP());
+
+    // 캐릭터 움직임 허용
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }

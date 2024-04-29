@@ -20,11 +20,6 @@ public:
 
 	class UFStatComponent* GetStatComponent() { return StatComponent; }
 
-	// 'OnOutOfCurrentHPDelegate' 델리게이트에 바운드할 함수
-	// -- 캐릭터 죽음 처리 함수
-	UFUNCTION()
-	virtual void OnCharacterDeath();
-
 	// 캐릭터에게 위젯 세팅 -- 자식 클래스에서 각각 알아서 정의할 수 있도록 virtual 정의
 	virtual void SetWidget(class UFirstUserWidget* InFirstUserWidget) {}
 

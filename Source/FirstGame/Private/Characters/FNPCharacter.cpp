@@ -142,6 +142,7 @@ void AFNPCharacter::CheckHit()
         }
     }
 
+    /*
 #pragma region DebugDrawing
     // 캡슐 탐색 시작 위치에서 끝 위치로 향하는 벡터 (캐릭터의 Forward 방향)
     FVector TraceVec = GetActorForwardVector() * AttackRange;
@@ -167,6 +168,7 @@ void AFNPCharacter::CheckHit()
         DebugLifeTime
     );
 #pragma endregion 
+    */
 }
 
 void AFNPCharacter::BeginAttack()

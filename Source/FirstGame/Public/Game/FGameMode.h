@@ -18,8 +18,7 @@ public:
 	// -- PlayerState 관리
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
-private:
-	// OnCurrentStageChanged 델리게이트와 바운드할 함수
+	// 'OnCurrentStageChangedDelegate' 델리게이트와 바운드할 함수
 	UFUNCTION()
 	void CurrentStageChanged(int32 NewCurrentStage);
 };

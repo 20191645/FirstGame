@@ -3,8 +3,9 @@
 #include "Game/FGameMode.h"
 #include "Controllers/FPlayerController.h"
 #include "Game/FPlayerState.h"
-#include "Characters/FCharacter.h"
+#include "Characters/FRPGCharacter.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/FStatComponent.h"
 
 AFGameMode::AFGameMode()
 {
@@ -29,16 +30,16 @@ void AFGameMode::PostLogin(APlayerController* NewPlayer)
 
 void AFGameMode::CurrentStageChanged(int32 NewCurrentStage)
 {
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if (true == ::IsValid(PlayerController))
+	APlayerController* PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
+	if (true == ::IsValid(PC))
 	{
 		// PlayerStart Tag(==CurrentStage)로 찾기
 		FString SpotName = FString::FromInt(NewCurrentStage);
-		AActor* StartSpot = FindPlayerStart(PlayerController, SpotName);
+		AActor* StartSpot = FindPlayerStart(PC, SpotName);
 		// 플레이어 캐릭터 위치 이동
-		AFCharacter* Player = Cast<AFCharacter>(PlayerController->GetCharacter());
-		Player->SetActorLocationAndRotation(StartSpot->GetActorLocation(), StartSpot->GetActorRotation());
+		AFRPGCharacter* RPGC = Cast<AFRPGCharacter>(PC->GetCharacter());
+		RPGC->SetActorLocationAndRotation(StartSpot->GetActorLocation(), StartSpot->GetActorRotation());
 		// 플레이어 캐릭터 스폰 위치 변경
-		RestartPlayerAtPlayerStart(PlayerController, StartSpot);
+		RestartPlayerAtPlayerStart(PC, StartSpot);
 	}
 }

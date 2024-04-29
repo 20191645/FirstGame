@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/FStatComponent.h"
+#include "Engine/World.h"
 
 AFCharacter::AFCharacter()
 {
@@ -55,11 +56,6 @@ void AFCharacter::BeginPlay()
     if (false == ::IsValid(StatComponent)) {
         return;
     }
-
-    if (false == StatComponent->OnOutOfCurrentHPDelegate.IsAlreadyBound(this, &ThisClass::OnCharacterDeath)) {
-        // 'OnOutOfCurrentHPDelegate'에 'OnCharacterDeath()' 멤버함수 바인드
-        StatComponent->OnOutOfCurrentHPDelegate.AddDynamic(this, &ThisClass::OnCharacterDeath);
-    }
 }
 
 float AFCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -70,15 +66,4 @@ float AFCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACo
     StatComponent->SetCurrentHP(StatComponent->GetCurrentHP() - FinalDamageAmount);
 
     return FinalDamageAmount;
-}
-
-void AFCharacter::OnCharacterDeath()
-{
-    GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-
-    // 'OnOutOfCurrentHPDelegate'에 바인드되어 있던 멤버함수 'OnCharacterDeath()' 멤버함수 언바인드
-    if (true == StatComponent->OnOutOfCurrentHPDelegate.IsAlreadyBound(this, &ThisClass::OnCharacterDeath)) {
-        StatComponent->OnOutOfCurrentHPDelegate.RemoveDynamic(this, &ThisClass::OnCharacterDeath);
-    }
 }

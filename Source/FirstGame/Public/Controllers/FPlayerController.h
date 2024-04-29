@@ -17,8 +17,6 @@ public:
 	// 메뉴 위젯 토글하기 위해 호출하는 함수
 	void ToggleMenu();
 
-	// PlayerState의 
-
 protected:
 	virtual void BeginPlay() override;
 
