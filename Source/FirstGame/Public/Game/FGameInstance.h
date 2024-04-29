@@ -19,6 +19,9 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxHP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxMP;
 };
 
 UCLASS()

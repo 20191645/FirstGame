@@ -9,6 +9,7 @@
 #include "Game/FPlayerState.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/FBuffComponent.h"
+#include "UI/SW_MPBar.h"
 
 void UFHUD::BindStatComponent(UFStatComponent* InStatComponent)
 {
@@ -16,6 +17,10 @@ void UFHUD::BindStatComponent(UFStatComponent* InStatComponent)
 		StatComponent = InStatComponent;
 		StatComponent->OnCurrentHPChangeDelegate.AddDynamic(HPBar, &USW_HPBar::OnCurrentHPChange);
 		StatComponent->OnMaxHPChangeDelegate.AddDynamic(HPBar, &USW_HPBar::OnMaxHPChange);
+
+		StatComponent->OnCurrentMPChangeDelegate.AddDynamic(MPBar, &USW_MPBar::OnCurrentMPChange);
+		StatComponent->OnMaxMPChangeDelegate.AddDynamic(MPBar, &USW_MPBar::OnMaxMPChange);
+
 
 		UFGameInstance* GameInstance = Cast<UFGameInstance>(GetWorld()->GetGameInstance());
 		if (true == ::IsValid(GameInstance)) {
@@ -26,6 +31,10 @@ void UFHUD::BindStatComponent(UFStatComponent* InStatComponent)
 				float MaxHP = GameInstance->GetCharacterStatDataTableRow(1)->MaxHP;
 				HPBar->SetMaxHP(MaxHP);
 				HPBar->InitializeHPBarWidget(StatComponent.Get());
+
+				float NewMaxMP = GameInstance->GetCharacterStatDataTableRow(1)->MaxMP;
+				MPBar->SetMaxMP(NewMaxMP);
+				MPBar->InitializeMPBarWidget(StatComponent.Get());
 			}
 		}
 	}

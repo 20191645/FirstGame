@@ -44,4 +44,8 @@ protected:
 	// 버프/디버프 정보를 가져오기 위한 속성
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFHUD")
 	TWeakObjectPtr<class UFBuffComponent> BuffComponent;
+
+	// 'WBP_MPBar' 위젯과 바인드할 속성
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFHUD", meta = (BindWidget))
+	TObjectPtr<class USW_MPBar> MPBar;
 };
