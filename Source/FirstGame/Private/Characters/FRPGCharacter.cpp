@@ -21,6 +21,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Game/FPlayerState.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Particles/ParticleSystem.h"
 
 AFRPGCharacter::AFRPGCharacter()
     :bIsAttacking(false)
@@ -65,10 +66,13 @@ AFRPGCharacter::AFRPGCharacter()
     BuffComponent = CreateDefaultSubobject<UFBuffComponent>(TEXT("BuffComponent"));
 
     // ParticleSystemComponent 오브젝트 할당
-    ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
-    ParticleSystemComponent->SetupAttachment(GetRootComponent());
+    RespawnParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("RespawnParticleSystemComponent"));
+    RespawnParticleSystemComponent->SetupAttachment(GetRootComponent());
     // 처음부터 Particle을 터트리지 않는다 [false]
-    ParticleSystemComponent->SetAutoActivate(false);
+    RespawnParticleSystemComponent->SetAutoActivate(false);
+
+    // ParticleSystem 오브젝트 할당
+    SkillParticleSystem = CreateDefaultSubobject<UParticleSystem>(TEXT("SkillParticleSystem"));
 }
 
 void AFRPGCharacter::BeginPlay()
@@ -148,7 +152,8 @@ void AFRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->RunAction, ETriggerEvent::Triggered, this, &ThisClass::Running);
         // MenuAction('IA_Run')을 Completed 상태에서 StopRunning 함수와 바인드 시켜준다
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->RunAction, ETriggerEvent::Completed, this, &ThisClass::StopRunning);
-
+        // MenuAction('IA_Skill')을 Started 상태에서 Skill 함수와 바인드 시켜준다
+        EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->SkillAction, ETriggerEvent::Started, this, &ThisClass::Skill);
     }
 }
 
@@ -399,15 +404,12 @@ void AFRPGCharacter::OnCharacterDeath()
     // 캐릭터 움직임 막기
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
-    // 1.3초 후 플레이어 리스폰
+    // 2초 후 플레이어 리스폰
     FTimerHandle respawnTimerHandle;
     GetWorld()->GetTimerManager().SetTimer(respawnTimerHandle, FTimerDelegate::CreateLambda([&]()
     {
-        SetActorHiddenInGame(true);
-        GetWorld()->GetTimerManager().SetTimer(respawnTimerHandle, FTimerDelegate::CreateLambda([&]() {
-            Respawn();
-        }), 1.7f, false);
-    }), 1.3f, false);
+        Respawn();
+    }), 2.0f, false);
 }
 
 void AFRPGCharacter::Respawn()
@@ -433,22 +435,105 @@ void AFRPGCharacter::Respawn()
         return;
     }
 
-    // 캐릭터 죽음 상태 초기화
-    AnimInstance->bIsDead = false;
-
     // PlayerStart Tag(==CurrentStage)로 찾기
     int32 CurrentStage = FPlayerState->GetCurrentStage();
     FString SpotName = FString::FromInt(CurrentStage);
     AActor* StartSpot = MyMode->FindPlayerStart(PC, SpotName);
 
+    // 캐릭터 죽음 상태 초기화
+    AnimInstance->bIsDead = false;
+
     // 플레이어 캐릭터 리스폰
     SetActorLocationAndRotation(StartSpot->GetActorLocation(), StartSpot->GetActorRotation());
-    ParticleSystemComponent->Activate(true);
-    SetActorHiddenInGame(false);
+    RespawnParticleSystemComponent->Activate(true);
 
-    // 캐릭터 HP 리셋
+    // 캐릭터 HP, MP 리셋
     MyStatComponent->SetCurrentHP(MyStatComponent->GetMaxHP());
+    MyStatComponent->SetCurrentMP(MyStatComponent->GetMaxMP());
 
     // 캐릭터 움직임 허용
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+}
+
+void AFRPGCharacter::Skill()
+{
+    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
+    if (false == ::IsValid(AnimInstance)) {
+        return;
+    }
+    APlayerController* PC = Cast<APlayerController>(GetController());
+    if (false == ::IsValid(PC)) {
+        return;
+    }
+
+    // MP 부족 시 스킬 시전 불가
+    float CurrentMP = StatComponent->GetCurrentMP();
+    if (CurrentMP < 100.0f) {
+        return;
+    }
+
+    // 스킬 시전 중 다른 입력 막기
+    DisableInput(PC);
+
+    // 스킬 사용 시 MP 감소
+    StatComponent->SetCurrentMP(CurrentMP - 80.0f);
+
+    // 움직이지 않고 멈춰서 애니메이션 재생
+    AnimInstance->bIsUsingSkill = true;
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+    // 스킬 이펙트 생성
+    UGameplayStatics::SpawnEmitterAtLocation(
+        GetWorld(), SkillParticleSystem, GetActorLocation() + SkillRange * GetActorForwardVector(), GetActorRotation());
+
+    // 대상을 하나만 감지할 예정(Single)이라 단수 정의
+    FHitResult HitResult;
+    FCollisionQueryParams Params(NAME_None, false, this);
+
+    // SweepSingleByChannel(): Trace channel을 사용해 물리적 충돌 여부를 조사하는 함수
+    bool bResult = GetWorld()->SweepSingleByChannel(
+        HitResult,  // 물리적 충돌이 탐지되면 정보를 담을 구조체
+        GetActorLocation() + SkillRange * GetActorForwardVector(), // 탐색을 시작할 위치
+        GetActorLocation() + SkillRange * GetActorForwardVector(),   // 탐색을 끝낼 위치
+        FQuat::Identity,    // 탐색에 사용할 도형의 회전 = ZeroRotator
+        ECC_GameTraceChannel12, // 물리 충돌 감지에 사용할 Trace channel 정보
+        FCollisionShape::MakeSphere(SkillRadius),  // 탐색에 사용할 기본 도형 정보
+        Params // 탐색 방법에 대한 설정 값을 모은 구조체
+    );
+
+
+    // Hit한 대상 감지 성공
+    if (true == bResult) {
+        if (true == ::IsValid(HitResult.GetActor())) {
+            // 현재 액터가 Hit한 대상의 데미지 전달 함수 호출
+            FDamageEvent DamageEvent;
+            HitResult.GetActor()->TakeDamage(50.f, DamageEvent, GetController(), this);
+        }
+    }
+
+    // 1초 후 함수 실행
+    FTimerHandle skillTimerHandle;
+    GetWorld()->GetTimerManager().SetTimer(skillTimerHandle, FTimerDelegate::CreateLambda([&]()
+    {
+        EndSkill();
+    }), 1.0f, false);
+}
+
+void AFRPGCharacter::EndSkill()
+{
+    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
+    if (false == ::IsValid(AnimInstance)) {
+        return;
+    }
+    APlayerController* PC = Cast<APlayerController>(GetController());
+    if (false == ::IsValid(PC)) {
+        return;
+    }
+
+    // 스킬 시전 끝났으므로 다른 입력 허용
+    EnableInput(PC);
+
+    // 움직이지 않고 멈춰서 애니메이션 재생
+    AnimInstance->bIsUsingSkill = false;
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }

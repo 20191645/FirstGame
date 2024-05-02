@@ -21,6 +21,8 @@ void UFAnimInstance::NativeInitializeAnimation()
 
     bIsDead = false;
 
+    bIsUsingSkill = false;
+
     AFCharacter* OwnerCharacter = Cast<AFCharacter>(TryGetPawnOwner());
     if (true == ::IsValid(OwnerCharacter)) {
         UFStatComponent* StatComponent = OwnerCharacter->GetStatComponent();

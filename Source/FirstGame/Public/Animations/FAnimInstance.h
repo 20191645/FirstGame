@@ -78,4 +78,8 @@ protected:
 	// bIsDead: 현재 죽었는지
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
 	uint8 bIsDead : 1;
+
+	// bIsUsingSkill: 현재 스킬 사용중인지
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
+	uint8 bIsUsingSkill : 1;
 };

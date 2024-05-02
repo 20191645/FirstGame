@@ -79,9 +79,13 @@ private:
 	// 'OnOutOfCurrentHPDelegate' 델리게이트에 바운드될 함수
 	UFUNCTION()
 	void OnCharacterDeath();
-
 	// 플레이어 캐릭터 리스폰 함수
 	void Respawn();
+
+	// 'IA_Skill' 액션에 바인드할 함수
+	void Skill();
+	// Skill() 함수 끝날 때 호출할 함수
+	void EndSkill();
 
 private:
 	// Input Config Data의 액션들과 캐릭터를 바인드 시켜줄 데이터
@@ -115,9 +119,9 @@ private:
 	// 에디터에서 관리되거나 Serialize될 필요 없으므로 uint8 대신 bool 자료형 사용
 	bool bIsAttackKeyPressed = false;
 
-	// 충돌 탐색 길이
+	// 일반 공격 충돌 탐색 길이
 	float AttackRange = 100.f;
-	// 충돌 탐색 구체 반지름
+	// 일반 공격 충돌 탐색 구체 반지름
 	float AttackRadius = 50.f;
 
 	// 클래스에 부착할 BuffComponent 데이터를 담을 속성
@@ -131,5 +135,14 @@ private:
 
 	// 리스폰 시 실행할 Particle 효과 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", meta = (AllowPrivateAccess))
-	TObjectPtr<class UParticleSystemComponent> ParticleSystemComponent;
+	TObjectPtr<class UParticleSystemComponent> RespawnParticleSystemComponent;
+
+	// 스킬 사용 시 터트릴 Particle 효과 데이터
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", meta = (AllowPrivateAccess))
+	TObjectPtr<class UParticleSystem> SkillParticleSystem;
+
+	// 스킬 공격 범위 길이
+	float SkillRange = 500.f;
+	// 스킬 공격 범위 구체 반지름
+	float SkillRadius = 200.f;
 };

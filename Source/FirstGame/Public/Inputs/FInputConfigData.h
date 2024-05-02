@@ -35,4 +35,8 @@ public:
 	// 'IA_Run'에 대응하는 속성
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputAction> RunAction;
+
+	// 'IA_Skill'에 대응하는 속성
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UInputAction> SkillAction;
 };
