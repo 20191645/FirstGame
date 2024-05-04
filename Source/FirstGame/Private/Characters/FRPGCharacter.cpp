@@ -278,7 +278,13 @@ void AFRPGCharacter::BeginAttack()
         return;
     }
 
+    // 점프 액션 중 공격 불가
+    if (AnimInstance->bIsFalling) {
+        return;
+    }
+
     CurrentSectionCount = 1;
+    bIsAttacking = true;
 
     // 움직이지 않고 멈춰서 Animation Montage를 재생할 수 있도록 한다
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
@@ -323,6 +329,7 @@ void AFRPGCharacter::EndAttack(UAnimMontage* InAnimMontage, bool bInterrupted)
     ensure(0 != CurrentSectionCount);
     CurrentSectionCount = 0;
     bIsAttackKeyPressed = false;
+    bIsAttacking = false;
     // 공격 액션이 끝났으므로 다시 움직이는 모드로 변경
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }
@@ -466,9 +473,14 @@ void AFRPGCharacter::Skill()
         return;
     }
 
+    // 공격 액션 중이거나 점프 중이면 스킬 시전 불가
+    if (bIsAttacking || AnimInstance->bIsFalling) {
+        return;
+    }
+
     // MP 부족 시 스킬 시전 불가
     float CurrentMP = StatComponent->GetCurrentMP();
-    if (CurrentMP < 100.0f) {
+    if (CurrentMP < 80.0f) {
         return;
     }
 
@@ -501,7 +513,6 @@ void AFRPGCharacter::Skill()
         Params // 탐색 방법에 대한 설정 값을 모은 구조체
     );
 
-
     // Hit한 대상 감지 성공
     if (true == bResult) {
         if (true == ::IsValid(HitResult.GetActor())) {
@@ -516,7 +527,7 @@ void AFRPGCharacter::Skill()
     GetWorld()->GetTimerManager().SetTimer(skillTimerHandle, FTimerDelegate::CreateLambda([&]()
     {
         EndSkill();
-    }), 1.0f, false);
+    }), 1.2f, false);
 }
 
 void AFRPGCharacter::EndSkill()
@@ -530,10 +541,10 @@ void AFRPGCharacter::EndSkill()
         return;
     }
 
-    // 스킬 시전 끝났으므로 다른 입력 허용
-    EnableInput(PC);
-
-    // 움직이지 않고 멈춰서 애니메이션 재생
+    // 캐릭터 움직임 초기화
     AnimInstance->bIsUsingSkill = false;
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+    // 스킬 시전 끝났으므로 다른 입력 허용
+    EnableInput(PC);
 }

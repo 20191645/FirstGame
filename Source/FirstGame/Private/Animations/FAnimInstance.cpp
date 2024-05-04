@@ -4,6 +4,7 @@
 #include "Characters/FRPGCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/FStatComponent.h"
+#include "GameFramework/PlayerController.h"
 
 UFAnimInstance::UFAnimInstance()
 {
