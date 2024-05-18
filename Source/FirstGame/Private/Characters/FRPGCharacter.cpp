@@ -403,7 +403,7 @@ void AFRPGCharacter::PoisonBuff()
     // 데미지 입기
     FDamageEvent DamageEvent;
     int32 CurrentStack = BuffComponent->GetCurrentStack();
-    TakeDamage(10.f * CurrentStack, DamageEvent, GetController(), this);
+    TakeDamage(5.f * CurrentStack, DamageEvent, GetController(), this);
 }
 
 void AFRPGCharacter::OnCharacterDeath()
