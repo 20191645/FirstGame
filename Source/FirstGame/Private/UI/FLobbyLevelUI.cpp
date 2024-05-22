@@ -26,7 +26,7 @@ void UFLobbyLevelUI::OnSubmitButtonClicked()
 
 	SaveInitializedSaveData();
 	// 다음 레벨로 이동
-	UGameplayStatics::OpenLevel(GetWorld(), TEXT("LoadingStage"), true, FString(TEXT("NextLevel=FirstStage?Saved=true")));
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("ManualStage"));
 }
 
 void UFLobbyLevelUI::SaveInitializedSaveData()
