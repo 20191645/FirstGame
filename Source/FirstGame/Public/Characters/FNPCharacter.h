@@ -30,6 +30,8 @@ public:
 	// 'FCharacter' 클래스에서 상속받은 위젯 세팅 함수
 	virtual void SetWidget(class UFirstUserWidget* InFirstUserWidget) override;
 
+	virtual void Tick(float DeltaTime) override;
+
 private:
 	// NPC 공격 Task 실행 시 호출될 함수
 	void Attack();

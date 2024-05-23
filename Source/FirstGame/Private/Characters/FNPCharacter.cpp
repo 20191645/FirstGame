@@ -13,10 +13,13 @@
 #include "Components/FWidgetComponent.h"
 #include "UI/FirstUserWidget.h"
 #include "UI/SW_HPBar.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Camera/PlayerCameraManager.h"
 
 AFNPCharacter::AFNPCharacter()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = true;
 
     // 레벨에 새롭게 배치되거나 생성되면 FAIController 빙의가 자동으로 이뤄진다
     AIControllerClass = AFAIController::StaticClass();
@@ -25,10 +28,12 @@ AFNPCharacter::AFNPCharacter()
     WidgetComponent = CreateDefaultSubobject<UFWidgetComponent>(TEXT("WidgetComponent"));
     WidgetComponent->SetupAttachment(GetRootComponent());
     // 위젯의 위치를 캐릭터 머리 위로 설정
-    WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
-    WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+    WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 150.f));
     WidgetComponent->SetDrawSize(FVector2D(180.0f, 50.0f));
     WidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    // 레벨에 놓인 액터를 무시하고 표시되지 않도록 Screen -> World 수정
+    WidgetComponent->SetWidgetSpace(EWidgetSpace::World);
 }
 
 void AFNPCharacter::BeginPlay()
@@ -88,6 +93,20 @@ void AFNPCharacter::SetWidget(UFirstUserWidget* InFirstUserWidget)
         HPBarWidget->InitializeHPBarWidget(StatComponent);
         // 'OnCurrentHPChange' 델리게이트에 SW_HPBar 클래스의 멤버함수 OnCurrentHPChange()를 바인드
         StatComponent->OnCurrentHPChangeDelegate.AddDynamic(HPBarWidget, &USW_HPBar::OnCurrentHPChange);
+    }
+}
+
+void AFNPCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    // 위젯이 플레이어가 보는 방향으로 보여지도록 수정
+    APlayerCameraManager* CM = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+    if (CM) {
+        FVector Start = WidgetComponent->GetComponentLocation();
+        FVector Target = CM->GetTransformComponent()->GetComponentLocation();
+        FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(Start, Target);
+        WidgetComponent->SetWorldRotation(Rotation);
     }
 }
 
