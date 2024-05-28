@@ -50,18 +50,12 @@ void UBTService_DetectPlayerCharacter::TickNode(UBehaviorTreeComponent& OwnerCom
 								// Black Board의 'TargetActor' Key 값을 'PlayerCharacter'로 설정
 								OwnerComp.GetBlackboardComponent()->SetValueAsObject(AFAIController::TargetActorKey, PC);
 
-								DrawDebugSphere(World, CenterPosition, DetectRadius, 16, FColor::Red, false, 0.5f);
-								DrawDebugPoint(World, PC->GetActorLocation(), 10.f, FColor::Red, false, 0.5f);
-								DrawDebugLine(World, NPC->GetActorLocation(), PC->GetActorLocation(), FColor::Red, false, 0.5f, 0u, 3.f);
-
 								return;
 							}
 							// (캐릭터를 조종하는 컨트롤러 != 플레이어 컨트롤러) -> NonPlayerCharacter
 							else {
 								// Black Board의 'TargetActor' Key 값을 nullptr로 설정
 								OwnerComp.GetBlackboardComponent()->SetValueAsObject(AFAIController::TargetActorKey, nullptr);
-
-								DrawDebugSphere(World, CenterPosition, DetectRadius, 16, FColor::Green, false, 0.5f);
 							}
 						}
 					}
@@ -70,8 +64,6 @@ void UBTService_DetectPlayerCharacter::TickNode(UBehaviorTreeComponent& OwnerCom
 					// Black Board의 'TargetActor' Key 값을 nullptr로 설정
 					OwnerComp.GetBlackboardComponent()->SetValueAsObject(AFAIController::TargetActorKey, nullptr);
 				}
-
-				DrawDebugSphere(World, CenterPosition, DetectRadius, 16, FColor::Green, false, 0.5f);
 			}
 		}
 	}

@@ -16,6 +16,12 @@ class FIRSTGAME_API AFNPCharacter : public AFCharacter
 
 	// BTTask_Attack 클래스에서 Attack() 멤버함수를 호출하기 위해
 	friend class UBTTask_Attack;
+
+	// AnimNotify(AN_CheckHit_Skill) 클래스에서 FNPCharacter 클래스의 CheckHit_Skill() 멤버함수에 접근하기 위함
+	friend class UAN_CheckHit_Skill;
+
+	// BTTask_Skill 클래스에서 Skill() 멤버함수를 호출하기 위해
+	friend class UBTTask_Skill;
 	
 public:
 	AFNPCharacter();
@@ -32,11 +38,13 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	bool IsNowUsingSkill() const { return bIsUsingSkill; }
+
 private:
 	// NPC 공격 Task 실행 시 호출될 함수
 	void Attack();
 
-	// Animation Montage가 끝났을 때 호출되어 바인드할 함수
+	// Animation Montage[Attack]가 끝났을 때 호출되어 바인드할 함수
 	UFUNCTION()
 	void OnAttackAnimMontageEnded(class UAnimMontage* Montage, bool bIsInterrupt);
 
@@ -54,6 +62,17 @@ private:
 
 	UFUNCTION()
 	void EndAttack(class UAnimMontage* InAnimMontage, bool bInterrupted);
+
+	// NPC 스킬 Task 실행 시 호출될 함수
+	void Skill();
+
+	// Animation Montage[Skill]가 끝났을 때 호출되어 바인드할 함수
+	UFUNCTION()
+	void OnSkillAnimMontageEnded(class UAnimMontage* Montage, bool bIsInterrupt);
+
+	// CheckHit 델리게이트와 바운드할 함수
+	UFUNCTION()
+	void CheckHit_Skill();
 
 private:
 	// bIsAttacking: Animation Montage('IM_Attack_NPC')가 재생중인지 확인하는 데이터
@@ -81,4 +100,14 @@ private:
 	// 'WBP_HPBar'에 바인드할 속성 -- WBP_HPBar
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFNPCharacter", meta = (AllowPrivateAccess))
 	TObjectPtr<class UFWidgetComponent> WidgetComponent;
+
+	// bIsUsingSkill: Animation Montage('IM_Skill_NPC')가 재생중인지 확인하는 데이터
+	bool bIsUsingSkill = false;
+
+	// 스킬 공격 범위 구체 반지름
+	float SkillRadius = 200.f;
+
+	// 스킬 사용 시 실행할 Particle 효과 데이터
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFNPCharacter", meta = (AllowPrivateAccess))
+	TObjectPtr<class UParticleSystemComponent> SkillParticleSystemComponent;
 };

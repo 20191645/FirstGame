@@ -142,7 +142,7 @@ private:
 	TObjectPtr<class UParticleSystem> SkillParticleSystem;
 
 	// 스킬 공격 범위 길이
-	float SkillRange = 500.f;
+	float SkillRange = 350.f;
 	// 스킬 공격 범위 구체 반지름
 	float SkillRadius = 200.f;
 };

@@ -225,7 +225,7 @@ void AFRPGCharacter::CheckHit()
         GetActorLocation(), // 탐색을 시작할 위치
         GetActorLocation() + AttackRange * GetActorForwardVector(),   // 탐색을 끝낼 위치
         FQuat::Identity,    // 탐색에 사용할 도형의 회전 = ZeroRotator
-        ECC_GameTraceChannel12, // 물리 충돌 감지에 사용할 Trace channel 정보 = Attack Channel의 Enum값
+        ECC_GameTraceChannel2, // 물리 충돌 감지에 사용할 Trace channel 정보 = Attack Channel의 Enum값
         FCollisionShape::MakeSphere(AttackRadius),  // 탐색에 사용할 기본 도형 정보 = 반지름 50인 구체
         Params // 탐색 방법에 대한 설정 값을 모은 구조체
     );
@@ -238,7 +238,7 @@ void AFRPGCharacter::CheckHit()
         if (true == ::IsValid(HitResult.GetActor())) {
             // 현재 액터가 Hit한 대상의 데미지 전달 함수 호출
             FDamageEvent DamageEvent;
-            HitResult.GetActor()->TakeDamage(20.f, DamageEvent, GetController(), this);
+            HitResult.GetActor()->TakeDamage(10.f, DamageEvent, GetController(), this);
         }
     }
 
@@ -452,7 +452,7 @@ void AFRPGCharacter::Respawn()
 
     // 플레이어 캐릭터 리스폰
     SetActorLocationAndRotation(StartSpot->GetActorLocation(), StartSpot->GetActorRotation());
-    RespawnParticleSystemComponent->Activate(true);
+    RespawnParticleSystemComponent->ActivateSystem(true);
 
     // 캐릭터 HP, MP 리셋
     MyStatComponent->SetCurrentHP(MyStatComponent->GetMaxHP());
@@ -503,24 +503,46 @@ void AFRPGCharacter::Skill()
     FCollisionQueryParams Params(NAME_None, false, this);
 
     // SweepSingleByChannel(): Trace channel을 사용해 물리적 충돌 여부를 조사하는 함수
-    bool bResult = GetWorld()->SweepSingleByChannel(
+    bool bSkillResult = GetWorld()->SweepSingleByChannel(
         HitResult,  // 물리적 충돌이 탐지되면 정보를 담을 구조체
         GetActorLocation() + SkillRange * GetActorForwardVector(), // 탐색을 시작할 위치
         GetActorLocation() + SkillRange * GetActorForwardVector(),   // 탐색을 끝낼 위치
         FQuat::Identity,    // 탐색에 사용할 도형의 회전 = ZeroRotator
-        ECC_GameTraceChannel12, // 물리 충돌 감지에 사용할 Trace channel 정보
+        ECC_GameTraceChannel2, // 물리 충돌 감지에 사용할 Trace channel 정보 = Attack Channel의 Enum값
         FCollisionShape::MakeSphere(SkillRadius),  // 탐색에 사용할 기본 도형 정보
         Params // 탐색 방법에 대한 설정 값을 모은 구조체
     );
 
     // Hit한 대상 감지 성공
-    if (true == bResult) {
+    if (true == bSkillResult) {
+        // HitResult의 Actor 속성은 TWeakObjectPtr 자료형 선언 
+        // -> IsValid() 함수로 유효성 검사 후 사용
+        // <- GetActor() 내부에서 IsActorValid() 함수 호출됨
         if (true == ::IsValid(HitResult.GetActor())) {
             // 현재 액터가 Hit한 대상의 데미지 전달 함수 호출
             FDamageEvent DamageEvent;
-            HitResult.GetActor()->TakeDamage(50.f, DamageEvent, GetController(), this);
+            HitResult.GetActor()->TakeDamage(25.f, DamageEvent, GetController(), this);
         }
     }
+
+    /*
+#pragma region DebugDrawing
+    // 캡슐 색깔 -- bResult(Hit 성공)
+    FColor DrawColor = true == bSkillResult ? FColor::Green : FColor::Red;
+    // 캡슐이 살아있는 시간
+    float DebugLifeTime = 2.f;
+
+    DrawDebugSphere(
+        GetWorld(),
+        GetActorLocation() + SkillRange * GetActorForwardVector(),
+        SkillRadius,
+        26,
+        DrawColor,
+        false,
+        DebugLifeTime
+    );
+#pragma endregion 
+    */
 
     // 1초 후 함수 실행
     FTimerHandle skillTimerHandle;

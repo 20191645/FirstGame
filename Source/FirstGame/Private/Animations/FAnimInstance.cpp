@@ -90,3 +90,24 @@ void UFAnimInstance::OnCharacterDeath()
 {
     bIsDead = true;
 }
+
+void UFAnimInstance::PlaySkillAnimMontage()
+{
+    // Animation Montage 등록 확인
+    if (true == ::IsValid(SkillAnimMontage)) {
+        // Montage_IsPlaying(): Animation Montage가 재생중인지 확인
+        if (false == Montage_IsPlaying(SkillAnimMontage)) {
+            // Montage_Play(): Animation Montage를 재생한다
+            Montage_Play(SkillAnimMontage);
+        }
+    }
+}
+
+void UFAnimInstance::AnimNotify_CheckHit_Skill()
+{
+   // CheckHitSkill 델리게이트가 Bound 상태면 Broadcast 
+   // -> FNPCharacter에서 바인드한 함수 호출
+    if (true == OnCheckHitSkillDelegate.IsBound()) {
+        OnCheckHitSkillDelegate.Broadcast();
+    }
+}

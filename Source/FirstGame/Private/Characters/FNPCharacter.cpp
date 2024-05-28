@@ -16,6 +16,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Particles/ParticleSystemComponent.h"
 
 AFNPCharacter::AFNPCharacter()
 {
@@ -34,6 +36,15 @@ AFNPCharacter::AFNPCharacter()
 
     // 레벨에 놓인 액터를 무시하고 표시되지 않도록 Screen -> World 수정
     WidgetComponent->SetWidgetSpace(EWidgetSpace::World);
+
+    // Collision Preset('FCharacter') 설정
+    GetCapsuleComponent()->SetCollisionProfileName(TEXT("FCharacter"));
+
+    // ParticleSystemComponent 오브젝트 할당
+    SkillParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("SkillParticleSystemComponent"));
+    SkillParticleSystemComponent->SetupAttachment(GetRootComponent());
+    // 처음부터 Particle을 터트리지 않는다 [false]
+    SkillParticleSystemComponent->SetAutoActivate(false);
 }
 
 void AFNPCharacter::BeginPlay()
@@ -55,7 +66,7 @@ void AFNPCharacter::BeginPlay()
 	}
 
 	UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
-	if (true == ::IsValid(AnimInstance) && false == AnimInstance->OnMontageEnded.IsAlreadyBound(this, &ThisClass::OnAttackAnimMontageEnded))
+	if (true == ::IsValid(AnimInstance))
 	{
 		// AnimationMontageEnded 델리게이트에 OnAttackAnimMontageEnded() 멤버 함수 바인드
         // -- Animation Montage('AM_Attack_NPC')가 끝나면 함수 호출
@@ -64,6 +75,11 @@ void AFNPCharacter::BeginPlay()
 		AnimInstance->OnCheckHitDelegate.AddDynamic(this, &ThisClass::CheckHit);
         // Animation Notify(CheckCanNextAttack)의 델리게이트에 CheckCanNextAttack() 멤버 함수 바인드
         AnimInstance->OnCheckCanNextAttackDelegate.AddDynamic(this, &ThisClass::CheckCanNextAttack);
+        // AnimationMontageEnded 델리게이트에 OnSkillAnimMontageEnded() 멤버 함수 바인드
+        // -- Animation Montage('AM_Skill_NPC')가 끝나면 함수 호출
+        AnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::OnSkillAnimMontageEnded);
+        // Animation Notify(CheckHit_Skill)의 델리게이트에 CheckHit_Skill() 멤버 함수 바인드
+        AnimInstance->OnCheckHitSkillDelegate.AddDynamic(this, &ThisClass::CheckHit_Skill);
 	}
 }
 
@@ -100,7 +116,7 @@ void AFNPCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // 위젯이 플레이어가 보는 방향으로 보여지도록 수정
+    // HP 위젯이 플레이어가 보는 방향으로 보여지도록 수정
     APlayerCameraManager* CM = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
     if (CM) {
         FVector Start = WidgetComponent->GetComponentLocation();
@@ -112,12 +128,12 @@ void AFNPCharacter::Tick(float DeltaTime)
 
 void AFNPCharacter::Attack()
 {
-    // 공격키를 눌렀을 때 Montage Section 위치가 0 -> BeginAttack() 호출
+    // 공격할 때 Montage Section 위치가 0 -> BeginAttack() 호출
     if (0 == CurrentSectionCount) {
         BeginAttack();
         return;
     }
-    // 공격키를 눌렀을 때 Montage Section 위치가 0이 아님 -> 다른 섹션으로 넘어간다
+    // 공격할 때 Montage Section 위치가 0이 아님 -> 다른 섹션으로 넘어간다
     else {
         // CurrentSectionCount의 값이 "1 ~ 5" 사이에 있는지 체크한다
         ensure(FMath::IsWithinInclusive<int32>(CurrentSectionCount, 1, 5));
@@ -126,68 +142,42 @@ void AFNPCharacter::Attack()
 
 void AFNPCharacter::OnAttackAnimMontageEnded(UAnimMontage* Montage, bool bIsInterrupt)
 {
-	bIsAttacking = false;
+	// 'AM_Attack_NPC' 재생이 끝난 게 맞는지 확인
+    if (bIsAttacking) {
+        bIsAttacking = false;
+    }
 }
 
 void AFNPCharacter::CheckHit()
 {
-    // 대상을 하나만 감지할 예정(Single)이라 단수 정의
-    FHitResult HitResult;
-    // Params(..., bInTraceComplex, *InIgnoreActor) 
-    // -- bInTraceComplex: Static Mesh 모양 그대로 충돌체를 만들지 선택 (T/F)
-    // -- InIgnoreActor: 대상 감지에서 해당 액터는 뺀다 (Ignore)
+    // 하나 이상의 오브젝트를 가져올거기 때문에 TArray 사용 -- {Multi}
+    TArray<FHitResult> HitResults;
     FCollisionQueryParams Params(NAME_None, false, this);
 
     // SweepSingleByChannel(): Trace channel을 사용해 물리적 충돌 여부를 조사하는 함수
-    bResult = GetWorld()->SweepSingleByChannel(
-        HitResult,  // 물리적 충돌이 탐지되면 정보를 담을 구조체
+    bResult = GetWorld()->SweepMultiByChannel(
+        HitResults,  // 물리적 충돌이 탐지되면 정보를 담을 구조체
         GetActorLocation(), // 탐색을 시작할 위치
         GetActorLocation() + AttackRange * GetActorForwardVector(),   // 탐색을 끝낼 위치
         FQuat::Identity,    // 탐색에 사용할 도형의 회전 = ZeroRotator
-        ECC_GameTraceChannel12, // 물리 충돌 감지에 사용할 Trace channel 정보 = Attack Channel의 Enum값
+        ECC_GameTraceChannel2, // 물리 충돌 감지에 사용할 Trace channel 정보 = Attack Channel의 Enum값
         FCollisionShape::MakeSphere(AttackRadius),  // 탐색에 사용할 기본 도형 정보 = 반지름 50인 구체
         Params // 탐색 방법에 대한 설정 값을 모은 구조체
     );
 
     // Hit한 대상 감지 성공
     if (true == bResult) {
-        // HitResult의 Actor 속성은 TWeakObjectPtr 자료형 선언 
-        // -> IsValid() 함수로 유효성 검사 후 사용
-        // <- GetActor() 내부에서 IsActorValid() 함수 호출됨
-        if (true == ::IsValid(HitResult.GetActor())) {
-            // 현재 액터가 Hit한 대상의 데미지 전달 함수 호출
-            FDamageEvent DamageEvent;
-            HitResult.GetActor()->TakeDamage(5.f, DamageEvent, GetController(), this);
+        for (auto const& HitResult : HitResults) {
+            AFCharacter* HitCharacter = Cast<AFCharacter>(HitResult.GetActor());
+            // HitCharacter가 FRPGCharacter인 경우
+            if (HitCharacter->IsA(AFRPGCharacter::StaticClass())) {
+                // 현재 액터가 Hit한 대상의 데미지 전달 함수 호출
+                FDamageEvent DamageEvent;
+                HitCharacter->TakeDamage(5.f, DamageEvent, GetController(), this);
+                break;
+            }
         }
     }
-
-    /*
-#pragma region DebugDrawing
-    // 캡슐 탐색 시작 위치에서 끝 위치로 향하는 벡터 (캐릭터의 Forward 방향)
-    FVector TraceVec = GetActorForwardVector() * AttackRange;
-    // 캡슐 벡터의 중심 위치
-    FVector Center = GetActorLocation() + TraceVec * 0.5f;
-    // 캡슐 벡터 길이의 절반
-    float HalfHeight = AttackRange * 0.5f + AttackRadius;
-    // 캐릭터의 Forward 방향으로 회전 행렬 적용하여 캡슐을 눕힌다
-    FQuat CapsuleRot = FRotationMatrix::MakeFromZ(TraceVec).ToQuat();
-    // 캡슐 색깔 -- bResult(Hit 성공)
-    FColor DrawColor = true == bResult ? FColor::Green : FColor::Red;
-    // 캡슐이 살아있는 시간
-    float DebugLifeTime = 5.f;
-
-    DrawDebugCapsule(
-        GetWorld(),
-        Center,
-        HalfHeight,
-        AttackRadius,
-        CapsuleRot,
-        DrawColor,
-        false,
-        DebugLifeTime
-    );
-#pragma endregion 
-    */
 }
 
 void AFNPCharacter::BeginAttack()
@@ -243,4 +233,83 @@ void AFNPCharacter::EndAttack(UAnimMontage* InAnimMontage, bool bInterrupted)
     CurrentSectionCount = 0;
     // 공격 액션이 끝났으므로 다시 움직이는 모드로 변경
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+}
+
+void AFNPCharacter::Skill()
+{
+    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
+    if (false == ::IsValid(AnimInstance)) {
+        return;
+    }
+
+    // 움직이지 않고 멈춰서 Animation Montage를 재생할 수 있도록 한다
+    bIsUsingSkill = true;
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+    // FAnimInstance에서 정의한 Animation Montage를 재생시켜줄 함수
+    AnimInstance->PlaySkillAnimMontage();
+}
+
+void AFNPCharacter::OnSkillAnimMontageEnded(UAnimMontage* Montage, bool bIsInterrupt)
+{
+    if (bIsUsingSkill) {
+        // 공격 액션이 끝났으므로 다시 움직이는 모드로 변경
+        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+        bIsUsingSkill = false;
+        SkillParticleSystemComponent->DeactivateSystem();
+    }
+}
+
+void AFNPCharacter::CheckHit_Skill()
+{
+    // 스킬 이펙트 생성
+    SkillParticleSystemComponent->ActivateSystem(true);
+    
+    // 하나 이상의 오브젝트를 가져올거기 때문에 TArray 사용 -- {Multi}
+    TArray<FOverlapResult> OverlapResults;
+    FCollisionQueryParams CollisionQueryParams(NAME_None, false, this);
+
+    // 주위 오브젝트들 감지 -- {Overlap}{Multi}{ByChannel}
+    // -- 충돌 범위: 캐릭터 전방 구체
+    bool bSkillResult = GetWorld()->OverlapMultiByChannel(
+        OverlapResults,
+        GetActorLocation(),
+        FQuat::Identity,
+        ECC_GameTraceChannel2,	// = Attack Channel
+        FCollisionShape::MakeSphere(SkillRadius),
+        CollisionQueryParams
+    );
+
+    // Hit한 대상 감지 성공
+    if (true == bSkillResult) {
+        for (auto const& OverlapResult : OverlapResults) {
+            AFCharacter* HitCharacter = Cast<AFCharacter>(OverlapResult.GetActor());
+            // HitCharacter가 FRPGCharacter인 경우
+            if (HitCharacter->IsA(AFRPGCharacter::StaticClass())) {
+                // 현재 액터가 Hit한 대상의 데미지 전달 함수 호출
+                FDamageEvent DamageEvent;
+                HitCharacter->TakeDamage(10.f, DamageEvent, GetController(), this);
+                break;
+            }
+        }
+    }
+
+    /*
+#pragma region DebugDrawing
+    // 캡슐 색깔 -- bResult(Hit 성공)
+    FColor DrawColor = true == bSkillResult ? FColor::Green : FColor::Red;
+    // 캡슐이 살아있는 시간
+    float DebugLifeTime = 2.f;
+
+    DrawDebugSphere(
+        GetWorld(),
+        GetActorLocation(),
+        SkillRadius,
+        26,
+        DrawColor,
+        false,
+        DebugLifeTime
+    );
+#pragma endregion 
+    */
 }
