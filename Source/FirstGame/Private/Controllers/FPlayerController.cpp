@@ -80,4 +80,13 @@ void AFPlayerController::BeginPlay()
 			MenuUIInstance->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
+
+	// 'CurrentStage'에 따른 'NPCAmount' 설정
+	AFPlayerState* FPlayerState = GetPlayerState<AFPlayerState>();
+	if (true == ::IsValid(FPlayerState)) {
+		// Stage 2: NPC 5명
+		if (FPlayerState->GetCurrentStage() == 2) {
+			SetNPCAmount(3);
+		}
+	}
 }

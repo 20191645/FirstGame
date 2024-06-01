@@ -17,6 +17,10 @@ public:
 	// 메뉴 위젯 토글하기 위해 호출하는 함수
 	void ToggleMenu();
 
+	// NPCAmount Getter, Setter 함수
+	int32 GetNPCAmount() { return NPCAmount; }
+	void SetNPCAmount(int32 NewNPCAmount) { NPCAmount = NewNPCAmount; }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -38,4 +42,8 @@ private:
 	// HUDWidget 인스턴스(개체) <- HUDWidget 클래스를 토대로 생성
 	UPROPERTY()
 	TObjectPtr<class UFHUD> HUDWidget;
+
+	// NPC 캐릭터 숫자
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AFPlayerController", meta = (AllowPrivateAccess))
+	int32 NPCAmount;
 };

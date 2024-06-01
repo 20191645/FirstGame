@@ -544,12 +544,12 @@ void AFRPGCharacter::Skill()
 #pragma endregion 
     */
 
-    // 1초 후 함수 실행
+    // 1.5초 후 함수 실행
     FTimerHandle skillTimerHandle;
     GetWorld()->GetTimerManager().SetTimer(skillTimerHandle, FTimerDelegate::CreateLambda([&]()
     {
         EndSkill();
-    }), 1.2f, false);
+    }), 1.5f, false);
 }
 
 void AFRPGCharacter::EndSkill()
