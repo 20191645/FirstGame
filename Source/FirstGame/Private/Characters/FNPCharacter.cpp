@@ -27,15 +27,14 @@ AFNPCharacter::AFNPCharacter()
     AIControllerClass = AFAIController::StaticClass();
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-    WidgetComponent = CreateDefaultSubobject<UFWidgetComponent>(TEXT("WidgetComponent"));
-    WidgetComponent->SetupAttachment(GetRootComponent());
+    HPBar = CreateDefaultSubobject<UFWidgetComponent>(TEXT("HPBar"));
+    HPBar->SetupAttachment(GetRootComponent());
     // 위젯의 위치를 캐릭터 머리 위로 설정
-    WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 150.f));
-    WidgetComponent->SetDrawSize(FVector2D(180.0f, 50.0f));
-    WidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
+    HPBar->SetRelativeLocation(FVector(0.f, 0.f, 150.f));
+    HPBar->SetDrawSize(FVector2D(180.0f, 50.0f));
+    HPBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     // 레벨에 놓인 액터를 무시하고 표시되지 않도록 Screen -> World 수정
-    WidgetComponent->SetWidgetSpace(EWidgetSpace::World);
+    HPBar->SetWidgetSpace(EWidgetSpace::World);
 
     // Collision Preset('FCharacter') 설정
     GetCapsuleComponent()->SetCollisionProfileName(TEXT("FCharacter"));
@@ -45,6 +44,12 @@ AFNPCharacter::AFNPCharacter()
     SkillParticleSystemComponent->SetupAttachment(GetRootComponent());
     // 처음부터 Particle을 터트리지 않는다 [false]
     SkillParticleSystemComponent->SetAutoActivate(false);
+
+    // 'DamageDisplay' 오브젝트 할당
+    DamageDisplay = CreateDefaultSubobject<UFWidgetComponent>(TEXT("DamageDisplay"));
+    DamageDisplay->SetupAttachment(GetMesh());
+    DamageDisplay->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    DamageDisplay->SetWidgetSpace(EWidgetSpace::World);
 }
 
 void AFNPCharacter::BeginPlay()
@@ -116,13 +121,19 @@ void AFNPCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // HP 위젯이 플레이어가 보는 방향으로 보여지도록 수정
+    // 위젯이 플레이어가 보는 방향으로 보여지도록 수정
     APlayerCameraManager* CM = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
     if (CM) {
-        FVector Start = WidgetComponent->GetComponentLocation();
+        // HP 위젯
+        FVector Start = HPBar->GetComponentLocation();
         FVector Target = CM->GetTransformComponent()->GetComponentLocation();
         FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(Start, Target);
-        WidgetComponent->SetWorldRotation(Rotation);
+        HPBar->SetWorldRotation(Rotation);
+
+        // 데미지 위젯
+        Start = DamageDisplay->GetComponentLocation();
+        Rotation = UKismetMathLibrary::FindLookAtRotation(Start, Target);
+        DamageDisplay->SetWorldRotation(Rotation);
     }
 }
 

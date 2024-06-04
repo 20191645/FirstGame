@@ -99,7 +99,7 @@ private:
 
 	// 'WBP_HPBar'에 바인드할 속성 -- WBP_HPBar
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFNPCharacter", meta = (AllowPrivateAccess))
-	TObjectPtr<class UFWidgetComponent> WidgetComponent;
+	TObjectPtr<class UFWidgetComponent> HPBar;
 
 	// bIsUsingSkill: Animation Montage('IM_Skill_NPC')가 재생중인지 확인하는 데이터
 	bool bIsUsingSkill = false;
@@ -110,4 +110,8 @@ private:
 	// 스킬 사용 시 실행할 Particle 효과 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFNPCharacter", meta = (AllowPrivateAccess))
 	TObjectPtr<class UParticleSystemComponent> SkillParticleSystemComponent;
+
+	// 'WBP_DamageDisplay'에 바인드할 속성
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AFNPCharacter", meta = (AllowPrivateAccess))
+	TObjectPtr<class UFWidgetComponent> DamageDisplay;
 };
