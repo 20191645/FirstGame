@@ -370,7 +370,8 @@ void AFRPGCharacter::OnCurrentStackChange(int32 InCurrentStack)
     }
     else {
         if (BuffName == "Slow") {
-            GetCharacterMovement()->MaxWalkSpeed = 500.f - InCurrentStack * 100.f;
+            // 캐릭터 속도 느리게 하기
+            GetCharacterMovement()->MaxWalkSpeed = FMath::Clamp<float>(500.f - InCurrentStack * 150.f, 0.f, 500.f);
             // 지속 시간 이후 버프 초기화
             GetWorld()->GetTimerManager().SetTimer(myTimerHandle, FTimerDelegate::CreateLambda([&]()
             {
@@ -403,7 +404,7 @@ void AFRPGCharacter::PoisonBuff()
     // 데미지 입기
     FDamageEvent DamageEvent;
     int32 CurrentStack = BuffComponent->GetCurrentStack();
-    TakeDamage(5.f * CurrentStack, DamageEvent, GetController(), this);
+    TakeDamage(10.f * CurrentStack, DamageEvent, GetController(), this);
 }
 
 void AFRPGCharacter::OnCharacterDeath()
@@ -473,8 +474,8 @@ void AFRPGCharacter::Skill()
         return;
     }
 
-    // 공격 액션 중이거나 점프 중이면 스킬 시전 불가
-    if (bIsAttacking || AnimInstance->bIsFalling) {
+    // 공격 액션 중이거나 점프 중, 스킬 사용중이면 스킬 시전 불가
+    if (bIsAttacking || AnimInstance->bIsFalling || AnimInstance->bIsUsingSkill) {
         return;
     }
 
@@ -544,12 +545,12 @@ void AFRPGCharacter::Skill()
 #pragma endregion 
     */
 
-    // 1.5초 후 함수 실행
+    // 1.3초 후 함수 실행
     FTimerHandle skillTimerHandle;
     GetWorld()->GetTimerManager().SetTimer(skillTimerHandle, FTimerDelegate::CreateLambda([&]()
     {
         EndSkill();
-    }), 1.5f, false);
+    }), 1.3f, false);
 }
 
 void AFRPGCharacter::EndSkill()

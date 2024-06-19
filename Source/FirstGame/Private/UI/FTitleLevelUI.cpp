@@ -51,7 +51,5 @@ void UFTitleLevelUI::OnExitGameButtonClicked()
 void UFTitleLevelUI::OnSavedGameButtonClicked()
 {
 	// 다음 레벨로 이동
-	// 'NextLevel'이 Key, 'FirstStage'이 Value 
-	// -- Loading 레벨에서는 'NextLevel'을 파싱해서 'FirstStage' 값을 얻어낸다
-	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("LoadingStage")), true, FString(TEXT("NextLevel=FirstStage?Saved=true")));
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("ManualStage"));
 }

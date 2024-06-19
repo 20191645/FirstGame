@@ -38,7 +38,7 @@ void AFPoisonFloor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 2초에 한 번씩 디버프 장판 접촉 확인
+	// 1초에 한 번씩 디버프 장판 접촉 확인
 	FTimerHandle overlapTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(overlapTimerHandle, this, &ThisClass::CheckOverlap, 2.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(overlapTimerHandle, this, &ThisClass::CheckOverlap, 1.0f, true);
 }
