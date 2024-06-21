@@ -101,6 +101,11 @@ void AFRPGCharacter::BeginPlay()
         AnimInstance->OnCheckHitDelegate.AddDynamic(this, &ThisClass::CheckHit);
         // Animation Notify(CheckCanNextAttack)의 델리게이트에 CheckCanNextAttack() 멤버 함수 바인드
         AnimInstance->OnCheckCanNextAttackDelegate.AddDynamic(this, &ThisClass::CheckCanNextAttack);
+        // Animation Notify(CheckHit_Skill)의 델리게이트에 CheckHit_Skill() 멤버 함수 바인드
+        AnimInstance->OnCheckHitSkillDelegate.AddDynamic(this, &ThisClass::CheckHit_Skill);
+        // AnimationMontageEnded 델리게이트에 OnSkillAnimMontageEnded() 멤버 함수 바인드
+        // -- Animation Montage('AM_Skill_RPG')가 끝나면 함수 호출
+        AnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::OnSkillAnimMontageEnded);
     }
 
     // 'OnOutOfCurrentHPDelegate'에 'OnCharacterDeath()' 멤버함수 바인드
@@ -117,9 +122,12 @@ void AFRPGCharacter::BeginPlay()
 
 void AFRPGCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-    // Animation Montage가 끝났으므로 다시 걷는 모드로 변경
-    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-    bIsAttacking = false;
+    // 'AM_Attack_RPG' 재생이 끝난 게 맞는지 확인
+    if (bIsAttacking) {
+        // Animation Montage가 끝났으므로 다시 걷는 모드로 변경
+        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+        bIsAttacking = false;
+    }
 }
 
 float AFRPGCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -278,8 +286,8 @@ void AFRPGCharacter::BeginAttack()
         return;
     }
 
-    // 점프 액션 중 공격 불가
-    if (AnimInstance->bIsFalling) {
+    // 점프 액션, 스킬 액션 중 공격 불가
+    if (AnimInstance->bIsFalling || bIsUsingSkill) {
         return;
     }
 
@@ -345,12 +353,22 @@ void AFRPGCharacter::Menu(const FInputActionValue& InValue)
 
 void AFRPGCharacter::Running(const FInputActionValue& InValue)
 {
+    // 속도 디버프 적용 중이면 입력 무시
+    if (BuffComponent->GetBuffName() == "Slow") {
+        return;
+    }
+
     // 캐릭터 속력을 높인다
     GetCharacterMovement()->MaxWalkSpeed = 800.f;
 }
 
 void AFRPGCharacter::StopRunning(const FInputActionValue& InValue)
 {
+    // 속도 디버프 적용 중이면 입력 무시
+    if (BuffComponent->GetBuffName() == "Slow") {
+        return;
+    }
+
     // 캐릭터 속력을 원래대로 돌아오게 한다
     GetCharacterMovement()->MaxWalkSpeed = 500.f;
 }
@@ -371,7 +389,8 @@ void AFRPGCharacter::OnCurrentStackChange(int32 InCurrentStack)
     else {
         if (BuffName == "Slow") {
             // 캐릭터 속도 느리게 하기
-            GetCharacterMovement()->MaxWalkSpeed = FMath::Clamp<float>(500.f - InCurrentStack * 150.f, 0.f, 500.f);
+            GetCharacterMovement()->MaxWalkSpeed = 
+                FMath::Clamp<float>(GetCharacterMovement()->MaxWalkSpeed - InCurrentStack * 50.f, 0.f, 500.f);
             // 지속 시간 이후 버프 초기화
             GetWorld()->GetTimerManager().SetTimer(myTimerHandle, FTimerDelegate::CreateLambda([&]()
             {
@@ -391,6 +410,8 @@ void AFRPGCharacter::BuffDurationEnd()
     GetWorld()->GetTimerManager().ClearTimer(myTimerHandle);
     // 버프 스택 초기화
     BuffComponent->SetCurrentStack(0);
+    // 버프 이름 초기화
+    BuffComponent->SetBuffName("Debuff");
 }
 
 void AFRPGCharacter::PoisonBuff()
@@ -469,13 +490,9 @@ void AFRPGCharacter::Skill()
     if (false == ::IsValid(AnimInstance)) {
         return;
     }
-    APlayerController* PC = Cast<APlayerController>(GetController());
-    if (false == ::IsValid(PC)) {
-        return;
-    }
 
     // 공격 액션 중이거나 점프 중, 스킬 사용중이면 스킬 시전 불가
-    if (bIsAttacking || AnimInstance->bIsFalling || AnimInstance->bIsUsingSkill) {
+    if (bIsAttacking || AnimInstance->bIsFalling || bIsUsingSkill) {
         return;
     }
 
@@ -485,16 +502,19 @@ void AFRPGCharacter::Skill()
         return;
     }
 
-    // 스킬 시전 중 다른 입력 막기
-    DisableInput(PC);
-
     // 스킬 사용 시 MP 감소
     StatComponent->SetCurrentMP(CurrentMP - 80.0f);
 
     // 움직이지 않고 멈춰서 애니메이션 재생
-    AnimInstance->bIsUsingSkill = true;
+    bIsUsingSkill = true;
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
+    // FAnimInstance에서 정의한 Animation Montage를 재생시켜줄 함수
+    AnimInstance->PlaySkillAnimMontage();
+}
+
+void AFRPGCharacter::CheckHit_Skill()
+{
     // 스킬 이펙트 생성
     UGameplayStatics::SpawnEmitterAtLocation(
         GetWorld(), SkillParticleSystem, GetActorLocation() + SkillRange * GetActorForwardVector(), GetActorRotation());
@@ -542,32 +562,16 @@ void AFRPGCharacter::Skill()
         false,
         DebugLifeTime
     );
-#pragma endregion 
+#pragma endregion
     */
-
-    // 1.3초 후 함수 실행
-    FTimerHandle skillTimerHandle;
-    GetWorld()->GetTimerManager().SetTimer(skillTimerHandle, FTimerDelegate::CreateLambda([&]()
-    {
-        EndSkill();
-    }), 1.3f, false);
 }
 
-void AFRPGCharacter::EndSkill()
+void AFRPGCharacter::OnSkillAnimMontageEnded(UAnimMontage* Montage, bool bIsInterrupt)
 {
-    UFAnimInstance* AnimInstance = Cast<UFAnimInstance>(GetMesh()->GetAnimInstance());
-    if (false == ::IsValid(AnimInstance)) {
-        return;
+    // 'AM_Skill_RPG' 재생이 끝난 게 맞는지 확인
+    if (bIsUsingSkill) {
+        // 캐릭터 움직임 초기화
+        bIsUsingSkill = false;
+        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
     }
-    APlayerController* PC = Cast<APlayerController>(GetController());
-    if (false == ::IsValid(PC)) {
-        return;
-    }
-
-    // 캐릭터 움직임 초기화
-    AnimInstance->bIsUsingSkill = false;
-    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-
-    // 스킬 시전 끝났으므로 다른 입력 허용
-    EnableInput(PC);
 }

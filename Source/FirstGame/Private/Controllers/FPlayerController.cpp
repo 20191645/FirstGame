@@ -84,9 +84,7 @@ void AFPlayerController::BeginPlay()
 	// 'CurrentStage'에 따른 'NPCAmount' 설정
 	AFPlayerState* FPlayerState = GetPlayerState<AFPlayerState>();
 	if (true == ::IsValid(FPlayerState)) {
-		// Stage 2: NPC 5명
-		if (FPlayerState->GetCurrentStage() == 2) {
-			SetNPCAmount(3);
-		}
+		// Stage 2: NPC 3명
+		SetNPCAmount(3);
 	}
 }

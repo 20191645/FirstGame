@@ -259,6 +259,9 @@ void AFNPCharacter::Skill()
 
     // FAnimInstance에서 정의한 Animation Montage를 재생시켜줄 함수
     AnimInstance->PlaySkillAnimMontage();
+
+    // 스킬 이펙트 생성
+    SkillParticleSystemComponent->ActivateSystem(true);
 }
 
 void AFNPCharacter::OnSkillAnimMontageEnded(UAnimMontage* Montage, bool bIsInterrupt)
@@ -273,9 +276,6 @@ void AFNPCharacter::OnSkillAnimMontageEnded(UAnimMontage* Montage, bool bIsInter
 
 void AFNPCharacter::CheckHit_Skill()
 {
-    // 스킬 이펙트 생성
-    SkillParticleSystemComponent->ActivateSystem(true);
-    
     // 하나 이상의 오브젝트를 가져올거기 때문에 TArray 사용 -- {Multi}
     TArray<FOverlapResult> OverlapResults;
     FCollisionQueryParams CollisionQueryParams(NAME_None, false, this);

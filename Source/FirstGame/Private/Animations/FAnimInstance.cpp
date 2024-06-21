@@ -19,10 +19,7 @@ void UFAnimInstance::NativeInitializeAnimation()
     Velocity = FVector::ZeroVector;
     bIsFalling = false;
     bIsCrouching = false;
-
     bIsDead = false;
-
-    bIsUsingSkill = false;
 
     AFCharacter* OwnerCharacter = Cast<AFCharacter>(TryGetPawnOwner());
     if (true == ::IsValid(OwnerCharacter)) {

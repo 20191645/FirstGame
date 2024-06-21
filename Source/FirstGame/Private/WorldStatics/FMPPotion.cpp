@@ -45,7 +45,7 @@ void AFMPPotion::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
     }
 
     // 캐릭터 MP 회복 (100)
-    StatComponent->SetCurrentMP(StatComponent->GetCurrentMP() + 100.0f);
+    StatComponent->SetCurrentMP(StatComponent->GetCurrentMP() + 160.0f);
 
     // Particle 효과 및 액터 처리
     ParticleSystemComponent->Activate(true);

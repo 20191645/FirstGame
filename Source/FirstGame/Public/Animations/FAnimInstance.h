@@ -88,10 +88,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
 	uint8 bIsDead : 1;
 
-	// bIsUsingSkill: 현재 스킬 사용중인지
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
-	uint8 bIsUsingSkill : 1;
-
 	// Animation Montage('AM_Skill')를 가져올 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UFAnimInstance")
 	TObjectPtr<class UAnimMontage> SkillAnimMontage;

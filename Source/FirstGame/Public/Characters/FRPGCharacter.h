@@ -14,6 +14,9 @@ class FIRSTGAME_API AFRPGCharacter : public AFCharacter
 
 	// AnimNotify(AN_CheckHit) 클래스에서 FRPGCharacter 클래스의 CheckHit() 멤버함수에 접근하기 위함
 	friend class UAN_CheckHit;
+
+	// AnimNotify(AN_CheckHit_Skill) 클래스에서 FRPGCharacter 클래스의 CheckHit_Skill() 멤버함수에 접근하기 위함
+	friend class UAN_CheckHit_Skill;
 	
 public:
 	AFRPGCharacter();
@@ -84,8 +87,14 @@ private:
 
 	// 'IA_Skill' 액션에 바인드할 함수
 	void Skill();
-	// Skill() 함수 끝날 때 호출할 함수
-	void EndSkill();
+
+	// CheckHit 델리게이트와 바운드할 함수
+	UFUNCTION()
+	void CheckHit_Skill();
+
+	// Animation Montage[Skill]가 끝났을 때 호출되어 바인드할 함수
+	UFUNCTION()
+	void OnSkillAnimMontageEnded(class UAnimMontage* Montage, bool bIsInterrupt);
 
 private:
 	// Input Config Data의 액션들과 캐릭터를 바인드 시켜줄 데이터
@@ -145,4 +154,8 @@ private:
 	float SkillRange = 350.f;
 	// 스킬 공격 범위 구체 반지름
 	float SkillRadius = 200.f;
+
+	// bIsUsingSkill: Animation Montage('IM_Skill_RPG')가 재생중인지 확인하는 데이터
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AFRPGCharacter", Meta = (AllowPrivateAccess))
+	bool bIsUsingSkill = false;
 };
