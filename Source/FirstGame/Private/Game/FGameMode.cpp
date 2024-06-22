@@ -33,7 +33,7 @@ void AFGameMode::CurrentStageChanged(int32 NewCurrentStage)
 	APlayerController* PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
 	if (true == ::IsValid(PC))
 	{
-		// PlayerStart Tag(==CurrentStage)로 찾기
+		// PlayerStart Tag(==CurrentStage)로 현재 스테이지 단계의 시작 위치 찾기
 		FString SpotName = FString::FromInt(NewCurrentStage);
 		AActor* StartSpot = FindPlayerStart(PC, SpotName);
 		// 플레이어 캐릭터 위치 이동

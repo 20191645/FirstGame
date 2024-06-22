@@ -27,6 +27,7 @@ void UBTService_DetectPlayerCharacter::TickNode(UBehaviorTreeComponent& OwnerCom
 			if (true == ::IsValid(World)) {
 				FVector CenterPosition = NPC->GetActorLocation();
 				float DetectRadius = 300.f;
+
 				// 하나 이상의 오브젝트를 가져올거기 때문에 TArray 사용 -- {Multi}
 				TArray<FOverlapResult> OverlapResults;
 				FCollisionQueryParams CollisionQueryParams(NAME_None, false, NPC);

@@ -22,7 +22,7 @@ public:
 	void BindBuffComponent(class UFBuffComponent* InBuffComponent);
 
 protected:
-	// HP 데이터를 가져오기 위한 속성
+	// HP, MP 데이터를 가져오기 위한 속성
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UFHUD")
 	TWeakObjectPtr<class UFStatComponent> StatComponent;
 

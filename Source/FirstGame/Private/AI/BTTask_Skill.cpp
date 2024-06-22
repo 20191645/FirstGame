@@ -18,9 +18,9 @@ void UBTTask_Skill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	if (true == ::IsValid(AIC)) {
 		AFNPCharacter* NPC = Cast<AFNPCharacter>(AIC->GetPawn());
 		if (true == ::IsValid(NPC)) {
-			// FNPCharacter 클래스의 'bIsAttacking' 속성값 확인
+			// FNPCharacter 클래스의 'bIsUsingSkill' 속성값 확인
 			if (false == NPC->IsNowUsingSkill()) {
-				// FinishLatentTask(, Succeeded): 공격 애니메이션(Animation Montage)이 끝났음을 알려준다
+				// FinishLatentTask(, Succeeded): 스킬 애니메이션(Animation Montage)이 끝났음을 알려준다
 				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 			}
 		}

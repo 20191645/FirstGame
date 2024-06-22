@@ -21,13 +21,13 @@ void UFHUD::BindStatComponent(UFStatComponent* InStatComponent)
 		StatComponent->OnCurrentMPChangeDelegate.AddDynamic(MPBar, &USW_MPBar::OnCurrentMPChange);
 		StatComponent->OnMaxMPChangeDelegate.AddDynamic(MPBar, &USW_MPBar::OnMaxMPChange);
 
-
 		UFGameInstance* GameInstance = Cast<UFGameInstance>(GetWorld()->GetGameInstance());
 		if (true == ::IsValid(GameInstance)) {
 			if (nullptr != GameInstance->GetCharacterStatDataTable() ||
 				nullptr != GameInstance->GetCharacterStatDataTableRow(1)) {
 				// PlayerController::BeginPlay()가 SStatComponent::BeginPlay()보다 먼저 호출되기 때문에,
-				// SStatComponent::BeginPlay()보다 먼저 호출되는 UI에서 초기화한다
+				// SStatComponent::BeginPlay()보다 먼저 호출되는 UI에서 HP, MP 정보를 초기화한다
+
 				float MaxHP = GameInstance->GetCharacterStatDataTableRow(1)->MaxHP;
 				HPBar->SetMaxHP(MaxHP);
 				HPBar->InitializeHPBarWidget(StatComponent.Get());

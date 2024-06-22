@@ -433,7 +433,7 @@ void AFRPGCharacter::OnCharacterDeath()
     // 캐릭터 움직임 막기
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
-    // 2초 후 플레이어 리스폰
+    // 2초 후 플레이어 리스폰 <- 캐릭터 죽는 애니메이션 재생 시간 기다리기
     FTimerHandle respawnTimerHandle;
     GetWorld()->GetTimerManager().SetTimer(respawnTimerHandle, FTimerDelegate::CreateLambda([&]()
     {
@@ -464,7 +464,7 @@ void AFRPGCharacter::Respawn()
         return;
     }
 
-    // PlayerStart Tag(==CurrentStage)로 찾기
+    // PlayerStart Tag(==CurrentStage)로 현재 스테이지 단계의 시작 위치 찾기
     int32 CurrentStage = FPlayerState->GetCurrentStage();
     FString SpotName = FString::FromInt(CurrentStage);
     AActor* StartSpot = MyMode->FindPlayerStart(PC, SpotName);
@@ -472,7 +472,7 @@ void AFRPGCharacter::Respawn()
     // 캐릭터 죽음 상태 초기화
     AnimInstance->bIsDead = false;
 
-    // 플레이어 캐릭터 리스폰
+    // 플레이어 캐릭터 리스폰 <- 현재 스테이지 단계의 시작 위치로 캐릭터 이동
     SetActorLocationAndRotation(StartSpot->GetActorLocation(), StartSpot->GetActorRotation());
     RespawnParticleSystemComponent->ActivateSystem(true);
 

@@ -56,7 +56,7 @@ void AFPlayerState::SetCurrentStage(int32 InCurrentStage)
 
 void AFPlayerState::SavePlayerState()
 {
-	// 'FPlayerStateState' 클래스 개체 생성 후 값 저장
+	// 'FPlayerStateSave' 클래스 개체 생성 후 값 저장
 	UFPlayerStateSave* PlayerStateSave = NewObject<UFPlayerStateSave>();
 	PlayerStateSave->PlayerName = GetPlayerName();
 	PlayerStateSave->CurrentStage = GetCurrentStage();
